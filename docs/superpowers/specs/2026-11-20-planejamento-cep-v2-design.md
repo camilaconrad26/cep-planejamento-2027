@@ -187,6 +187,7 @@ Script único executado no corte para a v2, antes de abrir o endereço para as a
 - **Itens próprios (`custom`):** os de nível Estratégico viram objetivos. Os demais ficam sob o objetivo estratégico da categoria no perfil da aluna; se ele não estiver no plano, é criado a partir da biblioteca.
 - **Itens OKR marcados:** viram KR com valor inicial, alvo e unidade vazios. O KR sem números aparece como "sem meta numérica" e fica fora do cálculo de progresso até ser preenchido. Por isso esses campos aceitam vazio.
 - **Pendências "Levar para 2027":** viram tarefas no trimestre escolhido, com status concluído se marcadas como feitas e não iniciado caso contrário.
+- **Listas do fechamento e tarefas avulsas (acrescentadas na v1 em 20/11/2026):** os campos "deu certo", "não funcionou", "aprendizados", "parar", "continuar", "começar" e os "ajustes" de cada trimestre passaram a ser listas de itens (`{id, texto, tri?, tarefa?}`), com textos antigos quebrados por linha. As tarefas criadas a partir deles, ou direto no trimestre, ficam em `dados.tarefas` (`{id, texto, tri, feito, origem}`). Na migração, cada tarefa vira `cep_tasks` (nível operacional, sem objetivo, trimestre e status de acordo com `feito`), e as listas vão para `fechamento_ano` como listas. Na v2, o fechamento também usa listas com "Criar tarefa".
 - **Itens de um perfil que a aluna deixou:** são migrados normalmente, apontando para o item daquele perfil na biblioteca.
 
 As linhas de `cep2027_planos.dados` viram registros da v2 no primeiro login, ou por um script único. O mapeamento é:
