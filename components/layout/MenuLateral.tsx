@@ -4,7 +4,8 @@ import { Selo } from "@/components/ui/Selo";
 
 export function MenuLateral({ itens }: { itens: ItemMenu[] }) {
   return (
-    <aside className="escuro sticky top-0 hidden h-screen w-[272px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-linha-escura px-4 py-6 lg:flex">
+    <div className="hidden w-[272px] shrink-0 border-r border-linha-escura bg-noite lg:block">
+    <aside className="escuro sticky top-0 flex h-screen flex-col gap-6 overflow-y-auto px-4 py-6">
       <div className="flex items-center gap-3 px-2">
         <Selo />
         <div><p className="font-display text-lg font-bold leading-none tracking-wide text-creme">CEP</p>
@@ -12,5 +13,6 @@ export function MenuLateral({ itens }: { itens: ItemMenu[] }) {
       </div>
       <nav aria-label="Menu principal"><NavLinks itens={itens} /></nav>
     </aside>
+    </div>
   );
 }
