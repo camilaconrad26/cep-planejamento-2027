@@ -1069,6 +1069,8 @@ export type Database = {
     Views: {
     }
     Functions: {
+      cep_excluir_minha_conta: { Args: never; Returns: undefined }
+      cep_iniciar_minha_conta: { Args: never; Returns: string }
       cep_garantir_ciclo: {
         Args: { p_ano: number; p_org: string }
         Returns: string
