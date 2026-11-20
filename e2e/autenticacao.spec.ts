@@ -40,6 +40,7 @@ test("cadastro-e-login", async ({ page }) => {
 test("volta-nao-permite-sair-do-site", async ({ page }) => {
   const { email, senha } = await criarConta(page);
   await page.getByRole("button", { name: "Sair" }).click();
+  await expect(page).toHaveURL(/\/entrar/);
   await page.goto("/entrar?volta=%2F%2Fexemplo.com");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha").fill(senha);

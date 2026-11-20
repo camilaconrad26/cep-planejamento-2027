@@ -16,3 +16,8 @@ it("mentora vê Alunas quando o módulo existe", () => {
 it("aluna não vê Alunas", () => {
   expect(itensMenu([], new Set(["/visao-geral", "/alunas"])).map((i) => i.rota)).not.toContain("/alunas");
 });
+it("biblioteca está construída e aparece em 3º para a aluna", async () => {
+  const { ROTAS_CONSTRUIDAS } = await import("@/lib/domain/rotas");
+  expect(ROTAS_CONSTRUIDAS.has("/biblioteca")).toBe(true);
+  expect(itensMenu([], ROTAS_CONSTRUIDAS).map((i) => i.rotulo)).toEqual(["Visão geral", "Meu diagnóstico", "Biblioteca de estratégias", "Configurações"]);
+});
