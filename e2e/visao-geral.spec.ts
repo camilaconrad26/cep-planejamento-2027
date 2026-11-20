@@ -17,6 +17,18 @@ test("depois-do-diagnostico-e-tarefa", async ({ page }) => {
   await page.getByLabel("Atuo de forma autônoma e já conduzo casos").check();
   await page.getByRole("button", { name: "Continuar" }).click();
   await expect(page.getByText("Pergunta 2 de 10")).toBeVisible();
+  await page.goto("/visao-geral");
+  const continuar = page.getByRole("region", { name: "Seu próximo passo estratégico" });
+  await expect(continuar.getByRole("heading", { name: "Continue o diagnóstico" })).toBeVisible();
+  await continuar.getByRole("link", { name: "Continuar o diagnóstico" }).click();
+  await expect(page.getByText("Pergunta 2 de 10")).toBeVisible();
+  for (let i = 2; i <= 9; i++) {
+    await expect(page.getByText(`Pergunta ${i} de 10`)).toBeVisible();
+    await page.getByRole("button", { name: "Pular" }).click();
+  }
+  await expect(page.getByText("Pergunta 10 de 10")).toBeVisible();
+  await page.getByRole("button", { name: "Ver resumo" }).click();
+  await expect(page).toHaveURL(/\/diagnostico\/resumo/);
   await page.goto("/diagnostico/fechamento");
   const novo = page.getByLabel("Novo item em Começar a fazer");
   await novo.fill("Cobrar o diagnóstico"); await novo.press("Enter");

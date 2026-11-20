@@ -3,7 +3,7 @@ import type { Retrato } from "@/lib/domain/proximoPasso";
 
 export type TarefaResumo = { status: Status; prazo: string | null; trimestre: 1 | 2 | 3 | 4 | null; arquivado: boolean; categoria: string | null };
 export type DadosRetrato = {
-  ano: number; diagnosticoIniciado: boolean;
+  ano: number; diagnosticoIniciado: boolean; diagnosticoConcluido: boolean;
   prioridades: { trimestre: number; slug: string }[];
   tarefas: TarefaResumo[];
   trimestresRevisados: number[];
@@ -20,7 +20,7 @@ export function calcularRetrato(d: DadosRetrato, hoje: string) {
   const vencendo7dias = ativas.filter((t) => t.status !== "concluido" && t.prazo && t.prazo >= hoje && diasEntre(hoje, t.prazo) <= 7).length;
   const concluidas = ativas.filter((t) => t.status === "concluido").length;
   const retrato: Retrato = {
-    diagnosticoIniciado: d.diagnosticoIniciado, trimestre, fase,
+    diagnosticoIniciado: d.diagnosticoIniciado, diagnosticoConcluido: d.diagnosticoConcluido, trimestre, fase,
     categoriasNoTrimestre: prioridades.length,
     categoriasSemAcao: prioridades.filter((s) => !comAcao.has(s)),
     atrasadas, medicaoVencida: d.medicaoVencida ?? 0,

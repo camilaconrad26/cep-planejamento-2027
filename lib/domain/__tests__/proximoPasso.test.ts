@@ -1,7 +1,7 @@
 import { proximoPasso, type Retrato } from "@/lib/domain/proximoPasso";
 
 const base: Retrato = {
-  diagnosticoIniciado: true, trimestre: 1, fase: "execucao", categoriasNoTrimestre: 2, categoriasSemAcao: [],
+  diagnosticoIniciado: true, diagnosticoConcluido: true, trimestre: 1, fase: "execucao", categoriasNoTrimestre: 2, categoriasSemAcao: [],
   atrasadas: 0, medicaoVencida: 0, trimestreAnteriorSemRevisao: false, vencendo7dias: 0,
 };
 
@@ -27,3 +27,10 @@ it("vencendo em 7 dias", () => expect(proximoPasso({ ...base, vencendo7dias: 3 }
 it("tudo em dia", () => expect(proximoPasso(base).codigo).toBe("em-dia"));
 it("a ordem respeita a prioridade: diagnóstico antes de atraso", () =>
   expect(proximoPasso({ ...base, diagnosticoIniciado: false, atrasadas: 3 }).codigo).toBe("diagnostico"));
+
+it("diagnóstico começado e não concluído: continuar antes de qualquer outra coisa", () => {
+  const p = proximoPasso({ ...base, diagnosticoConcluido: false, categoriasNoTrimestre: 0 });
+  expect(p.codigo).toBe("diagnostico-continuar");
+  expect(p.titulo).toBe("Continue o diagnóstico");
+  expect(p.href).toBe("/diagnostico");
+});

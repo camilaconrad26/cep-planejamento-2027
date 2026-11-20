@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
-import { exigirSessao } from "@/lib/data/sessao";
+import { exigirSessao, obterSessao } from "@/lib/data/sessao";
 import { PERGUNTAS, resumirDiagnostico, sugerirPerfil, type Respostas } from "@/lib/domain/diagnostico";
 import { lerFechamento, type Fechamento } from "@/lib/domain/fechamento";
 
@@ -66,8 +66,9 @@ async function concluir(orgId: string, userId: string) {
 }
 
 /** Salvamento automático do fechamento do ano anterior. */
-export async function salvarFechamento(f: Fechamento): Promise<{ erro?: string }> {
-  const s = await exigirSessao();
+export async function salvarFechamento(f: Fechamento): Promise<{ erro?: "sessao" | string }> {
+  const s = await obterSessao().catch(() => null);
+  if (!s) return { erro: "sessao" }; // sem redirecionar: a aluna não perde o que está na tela
   const limpo = lerFechamento(f);
   if (JSON.stringify(limpo).length > 150_000) return { erro: "Texto longo demais. Encurte alguns itens." };
   try { await gravar(s.orgId, s.userId, { fechamento_ano: limpo }); return {}; }
@@ -88,6 +89,7 @@ export async function refazerDiagnostico() {
   const s = await exigirSessao();
   const d = await obterDiagnostico(s.orgId);
   const sb = await criarClienteServidor();
-  await sb.from("cep_diagnostics").insert({ org_id: s.orgId, user_id: s.userId, respostas: (d?.respostas ?? {}) as never, fechamento_ano: (d?.fechamento ?? {}) as never });
+  const { error } = await sb.from("cep_diagnostics").insert({ org_id: s.orgId, user_id: s.userId, respostas: (d?.respostas ?? {}) as never, fechamento_ano: (d?.fechamento ?? {}) as never });
+  if (error) throw new Error("Não foi possível refazer o diagnóstico. Tente de novo.");
   redirect("/diagnostico/1");
 }

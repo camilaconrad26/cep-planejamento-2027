@@ -15,7 +15,7 @@ export const LISTAS: { chave: ChaveLista; rotulo: string; ajuda: string; grupo: 
   { chave: "parar", rotulo: "Parar de fazer", ajuda: "O que consome tempo e não traz resultado.", grupo: "melhorar" },
   { chave: "continuar", rotulo: "Continuar fazendo", ajuda: "O que funciona e merece ser mantido.", grupo: "melhorar" },
   { chave: "comecar", rotulo: "Começar a fazer", ajuda: "O que faltou em 2026 e entra em 2027.", grupo: "melhorar" },
-  { chave: "pendencias", rotulo: "Pendências", ajuda: "O que ficou em aberto. Decida o destino; o que for levado para 2027 vira tarefa.", grupo: "pendencias" },
+  { chave: "pendencias", rotulo: "Pendências", ajuda: "O que ficou em aberto. Escolha o destino; para o que for levado para 2027, escolha o trimestre e clique em Criar tarefa.", grupo: "pendencias" },
 ];
 
 const vazio = (): Record<ChaveLista, ItemLista[]> => Object.fromEntries(LISTAS.map((l) => [l.chave, []])) as unknown as Record<ChaveLista, ItemLista[]>;

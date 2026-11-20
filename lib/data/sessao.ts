@@ -6,11 +6,11 @@ import { criarClienteServidor } from "@/lib/data/supabase/servidor";
 export type Papel = "mentora" | "admin";
 export type Sessao = { userId: string; email: string; orgId: string; perfil: 1 | 2 | 3 | null; papeis: Papel[]; nome: string };
 
-/** Sessão da aluna logada (uma vez por requisição). Sem sessão, vai para /entrar. */
-export const exigirSessao = cache(async (): Promise<Sessao> => {
+/** Sessão da aluna logada, ou null se a sessão acabou (uma vez por requisição). */
+export const obterSessao = cache(async (): Promise<Sessao | null> => {
   const sb = await criarClienteServidor();
   const { data: { user } } = await sb.auth.getUser();
-  if (!user) redirect("/entrar");
+  if (!user) return null;
   const buscar = () => Promise.all([
     sb.from("cep_profiles").select("nome, perfil").eq("user_id", user.id).maybeSingle(),
     sb.from("cep_organization_members").select("org_id").eq("user_id", user.id).order("org_id").limit(1).maybeSingle(),
@@ -28,3 +28,10 @@ export const exigirSessao = cache(async (): Promise<Sessao> => {
     perfil: (perfil.data.perfil as 1 | 2 | 3 | null) ?? null, papeis: (papeis.data ?? []).map((p) => p.papel as Papel),
   };
 });
+
+/** Sessão obrigatória para páginas: sem sessão, vai para /entrar. */
+export async function exigirSessao(): Promise<Sessao> {
+  const s = await obterSessao();
+  if (!s) redirect("/entrar");
+  return s;
+}

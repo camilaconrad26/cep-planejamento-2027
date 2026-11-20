@@ -9,7 +9,7 @@ export async function montarRetrato(orgId: string, hoje: string) {
   if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
   const [ciclo, diag, prios, tarefas, revisoes] = await Promise.all([
     sb.from("cep_cycles").select("id, ano").eq("id", cicloId).single(),
-    sb.from("cep_diagnostics").select("id").eq("org_id", orgId).limit(1),
+    sb.from("cep_diagnostics").select("id, concluido_em").eq("org_id", orgId).order("created_at", { ascending: false }).limit(1),
     sb.from("cep_cycle_priorities").select("trimestre, cep_categories(slug)").eq("cycle_id", cicloId),
     sb.from("cep_tasks").select("status, prazo, trimestre, arquivado, cep_objectives(cep_categories(slug))").eq("cycle_id", cicloId),
     sb.from("cep_reviews").select("trimestre").eq("cycle_id", cicloId).not("concluida_em", "is", null),
@@ -22,6 +22,7 @@ export async function montarRetrato(orgId: string, hoje: string) {
   const r = calcularRetrato({
     ano,
     diagnosticoIniciado: (diag.data?.length ?? 0) > 0,
+    diagnosticoConcluido: !!diag.data?.[0]?.concluido_em,
     prioridades: (prios.data ?? []).map((p) => ({ trimestre: p.trimestre, slug: slugDe(p.cep_categories) ?? "" })).filter((p) => p.slug),
     tarefas: (tarefas.data ?? []).map((t) => {
       const obj = Array.isArray(t.cep_objectives) ? t.cep_objectives[0] : t.cep_objectives;

@@ -12,3 +12,9 @@ it("texto livre antigo vira itens, um por linha", () => {
 it("ignora lixo nas listas", () => {
   expect(lerFechamento({ listas: { comecar: [{ id: "1", texto: "ok" }, null, { id: 2 }] } }).listas.comecar).toHaveLength(1);
 });
+
+it("a ajuda das pendências descreve o que a tela faz", async () => {
+  const { LISTAS } = await import("@/lib/domain/fechamento");
+  expect(LISTAS.find((l) => l.chave === "pendencias")?.ajuda).toBe(
+    "O que ficou em aberto. Escolha o destino; para o que for levado para 2027, escolha o trimestre e clique em Criar tarefa.");
+});

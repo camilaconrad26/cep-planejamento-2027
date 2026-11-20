@@ -29,13 +29,20 @@ Deno.serve(async (req: Request) => {
     const senha = String(b.senha ?? "");
     if (nome.length < 3) return resp(400, { erro: "Informe o seu nome completo." });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return resp(400, { erro: "Informe um e-mail válido." });
-    if (senha.length < 8 || senha.length > 72) return resp(400, { erro: "A senha precisa de pelo menos 8 caracteres." });
+    if (senha.length < 8) return resp(400, { erro: "A senha precisa de pelo menos 8 caracteres." });
+    if (senha.length > 72) return resp(400, { erro: "A senha pode ter no máximo 72 caracteres." });
+    const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "desconhecido";
+    const { data: liberado, error: eLim } = await admin.rpc("cep_registrar_tentativa", { p_ip: ip });
+    if (eLim) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });
+    if (!liberado) return resp(429, { erro: "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." });
     for (const t of TABELAS_EQUIPE) {
       const { data, error } = await admin.from(t).select("email").ilike("email", email.replace(/[\\%_]/g, "\\$&")).limit(1);
       if (error) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });
-      if (data.length) return resp(403, { erro: "Este e-mail não pode ser cadastrado por aqui. Fale com a mentora." });
+      // Mesma resposta de "já cadastrado": não revela quem é da equipe do escritório.
+      if (data.length) return resp(409, { erro: 'Este e-mail já tem cadastro. Use "Entrar".' });
     }
-    const { data, error } = await admin.auth.admin.createUser({ email, password: senha, email_confirm: true, user_metadata: { nome, origem: "cep" } });
+    // origem em app_metadata: a própria pessoa não consegue alterar (user_metadata ela consegue).
+    const { data, error } = await admin.auth.admin.createUser({ email, password: senha, email_confirm: true, user_metadata: { nome }, app_metadata: { origem: "cep" } });
     if (error || !data.user) {
       const ja = /already|registered|exists/i.test(error?.message ?? "");
       return resp(ja ? 409 : 400, { erro: ja ? 'Este e-mail já tem cadastro. Use "Entrar".' : "Não foi possível criar a conta." });
@@ -52,15 +59,17 @@ Deno.serve(async (req: Request) => {
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
     const { data: quem } = token ? await admin.auth.getUser(token) : { data: { user: null } };
     if (!quem?.user) return resp(401, { erro: "Sessão expirada. Entre de novo." });
-    const { data: m } = await admin.from("cep_roles").select("user_id").eq("user_id", quem.user.id).eq("papel", "mentora").maybeSingle();
+    const { data: m, error: eM } = await admin.from("cep_roles").select("user_id").eq("user_id", quem.user.id).eq("papel", "mentora").maybeSingle();
+    if (eM) return resp(500, { erro: "Não foi possível verificar a permissão. Tente de novo." });
     if (!m) return resp(403, { erro: "Apenas a mentora pode redefinir senhas." });
     const nova = String(b.novaSenha ?? "");
-    if (nova.length < 8 || nova.length > 72) return resp(400, { erro: "A senha precisa de pelo menos 8 caracteres." });
+    if (nova.length < 8 || nova.length > 72) return resp(400, { erro: "A senha precisa ter de 8 a 72 caracteres." });
     const alvoId = String(b.userId ?? "");
-    const { data: papeisAlvo } = await admin.from("cep_roles").select("papel").eq("user_id", alvoId);
+    const { data: papeisAlvo, error: eP } = await admin.from("cep_roles").select("papel").eq("user_id", alvoId);
+    if (eP) return resp(500, { erro: "Não foi possível verificar a conta. Tente de novo." });
     if (papeisAlvo?.length) return resp(403, { erro: "Não é possível redefinir a senha de outra mentora ou administradora." });
     const { data: alvo } = await admin.auth.admin.getUserById(alvoId);
-    const origem = alvo?.user?.user_metadata?.origem;
+    const origem = alvo?.user?.app_metadata?.origem;
     if (!alvo?.user || (origem !== "cep" && origem !== "cep2027")) return resp(403, { erro: "Esta conta não pode ter a senha redefinida por aqui." });
     const { error } = await admin.auth.admin.updateUserById(alvo.user.id, { password: nova });
     if (error) return resp(400, { erro: "Não foi possível redefinir a senha." });

@@ -2,10 +2,10 @@ import type { Fase } from "@/lib/domain/ciclo";
 import { destino, ROTAS, type Rota } from "@/lib/domain/rotas";
 
 export type Retrato = {
-  diagnosticoIniciado: boolean; trimestre: 1 | 2 | 3 | 4; fase: Fase; categoriasNoTrimestre: number; categoriasSemAcao: string[];
+  diagnosticoIniciado: boolean; diagnosticoConcluido: boolean; trimestre: 1 | 2 | 3 | 4; fase: Fase; categoriasNoTrimestre: number; categoriasSemAcao: string[];
   atrasadas: number; medicaoVencida: number; trimestreAnteriorSemRevisao: boolean; vencendo7dias: number;
 };
-export type CodigoPasso = "diagnostico" | "prioridades" | "categoria-sem-acao" | "atrasadas" | "medir" | "revisao" | "vencendo" | "em-dia";
+export type CodigoPasso = "diagnostico" | "diagnostico-continuar" | "prioridades" | "categoria-sem-acao" | "atrasadas" | "medir" | "revisao" | "vencendo" | "em-dia";
 export type Passo = { codigo: CodigoPasso; titulo: string; texto: string; href: string; botao: string };
 
 const p = (codigo: CodigoPasso, titulo: string, texto: string, rota: Rota, botao: string, construidas?: ReadonlySet<Rota>): Passo =>
@@ -16,6 +16,8 @@ export function proximoPasso(s: Retrato, construidas?: ReadonlySet<Rota>): Passo
   const ex = s.fase === "execucao";
   if (!s.diagnosticoIniciado)
     return p("diagnostico", "Comece pelo diagnóstico", "Dez perguntas rápidas sobre o seu escritório. Com elas sugerimos o seu perfil e as prioridades do ano.", ROTAS.diagnostico, "Fazer o diagnóstico", construidas);
+  if (!s.diagnosticoConcluido)
+    return p("diagnostico-continuar", "Continue o diagnóstico", "Você começou e ainda não terminou. Retome de onde parou; leva poucos minutos.", ROTAS.diagnostico, "Continuar o diagnóstico", construidas);
   if (s.categoriasNoTrimestre === 0)
     return p("prioridades", `Escolha as prioridades do ${s.trimestre}º trimestre`, "Selecione até três categorias para concentrar o esforço neste trimestre.", ROTAS.planejamento, "Escolher prioridades", construidas);
   if (s.categoriasSemAcao.length > 0)

@@ -14,13 +14,17 @@ post() { curl -s -o /tmp/cep-conta-resp -w "%{http_code}" -X POST "$F" -H "Conte
 confere "cadastro válido" 200 "$(post -d "{\"acao\":\"cadastro\",\"nome\":\"Teste Automatico\",\"email\":\"$EMAIL\",\"senha\":\"SenhaTeste#2027\"}")"
 confere "cadastro repetido" 409 "$(post -d "{\"acao\":\"cadastro\",\"nome\":\"Teste Automatico\",\"email\":\"$EMAIL\",\"senha\":\"SenhaTeste#2027\"}")"
 if [ -n "${EMAIL_EQUIPE:-}" ]; then
-  confere "e-mail da equipe do escritório" 403 "$(post -d "{\"acao\":\"cadastro\",\"nome\":\"Equipe\",\"email\":\"${EMAIL_EQUIPE}\",\"senha\":\"SenhaTeste#2027\"}")"
+  confere "e-mail da equipe do escritório (mesma resposta de já cadastrado)" 409 "$(post -d "{\"acao\":\"cadastro\",\"nome\":\"Equipe\",\"email\":\"${EMAIL_EQUIPE}\",\"senha\":\"SenhaTeste#2027\"}")"
 else echo "SKIP e-mail da equipe (defina EMAIL_EQUIPE para testar)"; fi
 confere "senha curta" 400 "$(post -d '{"acao":"cadastro","nome":"Teste","email":"curta@example.com","senha":"123"}')"
 confere "redefinir sem login" 401 "$(post -d '{"acao":"redefinir","userId":"00000000-0000-0000-0000-000000000000","novaSenha":"SenhaTeste#2027"}')"
 TOKEN=$(curl -s -X POST "$URL/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" \
   -d "{\"email\":\"$EMAIL\",\"password\":\"SenhaTeste#2027\"}" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
 confere "login da conta criada" 1 "$([ -n "$TOKEN" ] && echo 1 || echo 0)"
+ORIGEM=$(echo "$TOKEN" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | python3 -c "import sys,json; print(json.loads(sys.stdin.read()+'')['app_metadata'].get('origem',''))" 2>/dev/null)
+confere "origem gravada em app_metadata (não editável)" cep "$ORIGEM"
+confere "senha longa demais" 400 "$(post -d "{\"acao\":\"cadastro\",\"nome\":\"Teste\",\"email\":\"longa@example.com\",\"senha\":\"$(printf 'a%.0s' $(seq 1 80))\"}")"
+grep -q "no máximo 72" /tmp/cep-conta-resp && echo "PASS mensagem de senha longa" || { echo "FAIL mensagem de senha longa: $(cat /tmp/cep-conta-resp)"; falhas=$((falhas+1)); }
 confere "aluna comum tenta redefinir senha" 403 "$(post -H "Authorization: Bearer $TOKEN" -d '{"acao":"redefinir","userId":"00000000-0000-0000-0000-000000000000","novaSenha":"SenhaTeste#2027"}')"
 PERFIL=$(curl -s "$URL/rest/v1/cep_profiles?select=nome" -H "apikey: $ANON" -H "Authorization: Bearer $TOKEN")
 confere "perfil criado e visível só para ela" '[{"nome":"Teste Automatico"}]' "$PERFIL"

@@ -50,3 +50,16 @@ test("notas-por-area", async ({ page }) => {
   await page.getByLabel("Nota para Comercial").fill("3");
   await expect(page.getByTestId("nota-comercial")).toHaveText("3");
 });
+
+test("sem-conexao-avisa-e-tenta-de-novo", async ({ page, context }) => {
+  await criarConta(page);
+  await page.goto("/diagnostico/fechamento");
+  await context.setOffline(true);
+  const novo = page.getByLabel("Novo item em Parar de fazer");
+  await novo.fill("Atender sem contrato"); await novo.press("Enter");
+  await expect(page.locator("#salvo")).toHaveText("Não foi possível salvar. Verifique a conexão.", { timeout: 15_000 });
+  await context.setOffline(false);
+  await expect(page.locator("#salvo")).toHaveText(/Salvo às/, { timeout: 20_000 });
+  await page.reload();
+  await expect(page.getByLabel("Parar de fazer, item 1")).toHaveValue("Atender sem contrato");
+});

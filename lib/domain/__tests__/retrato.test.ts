@@ -1,6 +1,6 @@
 import { calcularRetrato } from "@/lib/domain/retrato";
 
-const vazio = { ano: 2027, diagnosticoIniciado: false, prioridades: [], tarefas: [], trimestresRevisados: [] };
+const vazio = { ano: 2027, diagnosticoIniciado: false, diagnosticoConcluido: false, prioridades: [], tarefas: [], trimestresRevisados: [] };
 
 it("primeiro acesso: nada iniciado, fase de planejamento", () => {
   const r = calcularRetrato(vazio, "2026-11-20");
@@ -43,4 +43,9 @@ it("revisão do trimestre anterior pendente só na execução", () => {
   expect(calcularRetrato({ ...vazio, trimestresRevisados: [] }, "2027-05-02").retrato.trimestreAnteriorSemRevisao).toBe(true);
   expect(calcularRetrato({ ...vazio, trimestresRevisados: [1] }, "2027-05-02").retrato.trimestreAnteriorSemRevisao).toBe(false);
   expect(calcularRetrato(vazio, "2027-02-02").retrato.trimestreAnteriorSemRevisao).toBe(false);
+});
+
+it("repassa se o diagnóstico foi concluído", () => {
+  expect(calcularRetrato({ ...vazio, diagnosticoIniciado: true, diagnosticoConcluido: true }, "2026-11-20").retrato.diagnosticoConcluido).toBe(true);
+  expect(calcularRetrato({ ...vazio, diagnosticoIniciado: true }, "2026-11-20").retrato.diagnosticoConcluido).toBe(false);
 });

@@ -15,17 +15,31 @@ export function Fechamento({ inicial }: { inicial: F }) {
   const [f, setF] = useState(inicial);
   const pendente = useRef(false), timer = useRef<ReturnType<typeof setTimeout>>(undefined), primeira = useRef(true);
   const ultimo = useRef(f); ultimo.current = f;
+  const versao = useRef(0); // cada alteração ganha um número; só a gravação da versão mais recente encerra o "pendente"
+
+  const salvar = async () => {
+    const minha = versao.current;
+    try {
+      const r = await salvarFechamento(ultimo.current);
+      if (r.erro === "sessao") { marcarSalvo("sessao"); return; }
+      if (r.erro) throw new Error(r.erro);
+      if (minha === versao.current) { pendente.current = false; marcarSalvo("salvo"); }
+    } catch {
+      marcarSalvo("erro");
+      clearTimeout(timer.current);
+      timer.current = setTimeout(salvar, 5000); // tenta de novo enquanto houver alteração não salva
+    }
+  };
 
   // Salvamento automático 900 ms depois da última alteração.
   useEffect(() => {
     if (primeira.current) { primeira.current = false; return; }
-    pendente.current = true; marcarSalvo("salvando");
+    versao.current += 1; pendente.current = true; marcarSalvo("salvando");
     clearTimeout(timer.current);
-    timer.current = setTimeout(async () => {
-      const r = await salvarFechamento(ultimo.current);
-      pendente.current = !!r.erro; marcarSalvo(r.erro ? "erro" : "salvo");
-    }, 900);
+    timer.current = setTimeout(salvar, 900);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f]);
+  useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => {
     const aviso = (e: BeforeUnloadEvent) => { if (pendente.current) e.preventDefault(); };
     window.addEventListener("beforeunload", aviso);
@@ -35,7 +49,7 @@ export function Fechamento({ inicial }: { inicial: F }) {
   const lista = (chave: ChaveLista) => {
     const l = LISTAS.find((x) => x.chave === chave)!;
     return <ListaItens key={chave} rotulo={l.rotulo} ajuda={l.ajuda} itens={f.listas[chave]} comDestino={chave === "pendencias"}
-      onChange={(itens) => setF((x) => ({ ...x, listas: { ...x.listas, [chave]: itens } }))} />;
+      onChange={(atualizar) => setF((x) => ({ ...x, listas: { ...x.listas, [chave]: atualizar(x.listas[chave]) } }))} />;
   };
   const ticket = f.contratos > 0 ? formatarMoeda(f.faturamento / f.contratos) : "—";
   const atingida = f.meta > 0 ? `${Math.round((f.faturamento / f.meta) * 100)}%` : "—";
