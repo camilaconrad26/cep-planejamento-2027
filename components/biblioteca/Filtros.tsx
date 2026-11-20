@@ -13,19 +13,19 @@ export function Filtros({ f, categorias, base, comNivel = true }: { f: F; catego
   return (
     <form ref={form} method="get" action={base} className="flex flex-wrap items-end gap-3 rounded-cartao border border-linha bg-white px-5 py-4">
       <label className={campo}>Perfil
-        <select name="perfil" defaultValue={f.perfil} onChange={enviar} className="campo font-normal">
+        <select name="perfil" aria-label="Perfil" defaultValue={f.perfil} onChange={enviar} className="campo font-normal">
           {PERFIS.map((p) => <option key={p.n} value={p.n}>{p.nome}</option>)}
         </select>
       </label>
       <label className={campo}>Categoria
-        <select name="categoria" defaultValue={f.categoria ?? ""} onChange={enviar} className="campo font-normal">
+        <select name="categoria" aria-label="Categoria" defaultValue={f.categoria ?? ""} onChange={enviar} className="campo font-normal">
           <option value="">Todas</option>
           {categorias.map((c) => <option key={c.slug} value={c.slug}>{c.nome}</option>)}
         </select>
       </label>
       {comNivel && (
         <label className={campo}>Nível
-          <select name="nivel" defaultValue={f.nivel ?? ""} onChange={enviar} className="campo font-normal">
+          <select name="nivel" aria-label="Nível" defaultValue={f.nivel ?? ""} onChange={enviar} className="campo font-normal">
             <option value="">Todos</option>
             {NIVEIS.map((n) => <option key={n.valor} value={n.valor}>{n.nome}</option>)}
           </select>
