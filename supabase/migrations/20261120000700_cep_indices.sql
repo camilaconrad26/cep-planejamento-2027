@@ -1,0 +1,25 @@
+-- Índices que cobrem as chaves estrangeiras (aviso "unindexed foreign keys" do Supabase).
+create index if not exists cep_cycle_priorities_cycle_org_idx on public.cep_cycle_priorities (cycle_id, org_id);
+create index if not exists cep_cycle_priorities_category_idx on public.cep_cycle_priorities (category_id);
+create index if not exists cep_cycles_duplicado_de_idx on public.cep_cycles (duplicado_de);
+create index if not exists cep_diagnostics_user_idx on public.cep_diagnostics (user_id);
+create index if not exists cep_financial_goals_cycle_org_idx on public.cep_financial_goals (cycle_id, org_id);
+create index if not exists cep_key_results_library_idx on public.cep_key_results (library_item_id);
+create index if not exists cep_key_results_okr_org_idx on public.cep_key_results (okr_id, org_id);
+create index if not exists cep_kpi_measurements_kpi_org_idx on public.cep_kpi_measurements (kpi_id, org_id);
+create index if not exists cep_kpis_cycle_org_idx on public.cep_kpis (cycle_id, org_id);
+create index if not exists cep_kpis_library_idx on public.cep_kpis (library_item_id);
+create index if not exists cep_kpis_objective_org_idx on public.cep_kpis (objective_id, org_id);
+create index if not exists cep_objectives_category_idx on public.cep_objectives (category_id);
+create index if not exists cep_objectives_cycle_org_idx on public.cep_objectives (cycle_id, org_id);
+create index if not exists cep_objectives_library_idx on public.cep_objectives (library_item_id);
+create index if not exists cep_okrs_cycle_org_idx on public.cep_okrs (cycle_id, org_id);
+create index if not exists cep_okrs_objective_org_idx on public.cep_okrs (objective_id, org_id);
+create index if not exists cep_organizations_criado_por_idx on public.cep_organizations (criado_por);
+create index if not exists cep_products_cycle_org_idx on public.cep_products (cycle_id, org_id);
+create index if not exists cep_quarter_results_cycle_org_idx on public.cep_quarter_results (cycle_id, org_id);
+create index if not exists cep_reviews_cycle_org_idx on public.cep_reviews (cycle_id, org_id);
+create index if not exists cep_sales_actions_cycle_org_idx on public.cep_sales_actions (cycle_id, org_id);
+create index if not exists cep_tasks_cycle_org_idx on public.cep_tasks (cycle_id, org_id);
+create index if not exists cep_tasks_library_idx on public.cep_tasks (library_item_id);
+create index if not exists cep_tasks_objective_org_idx on public.cep_tasks (objective_id, org_id);
