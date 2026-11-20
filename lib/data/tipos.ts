@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Gerado do Supabase (generate_typescript_types) e filtrado para objetos cep_*. Não editar à mão.
 export type Json =
   | string
