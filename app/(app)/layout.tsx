@@ -1,3 +1,4 @@
+import { ProvedorAviso } from "@/components/ui/Aviso";
 import { MenuLateral } from "@/components/layout/MenuLateral";
 import { Topo } from "@/components/layout/Topo";
 import { itensMenu } from "@/components/layout/itensMenu";
@@ -14,7 +15,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         <MenuLateral itens={itens} />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topo nome={s.nome} itens={itens} />
-          <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">{children}</main>
+          <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none"><ProvedorAviso>{children}</ProvedorAviso></main>
           <footer className="border-t border-linha-escura bg-noite">
             <div className="flex flex-wrap justify-between gap-x-6 gap-y-2 px-5 py-5 text-sm text-cinza lg:px-8">
               <span>CEP · Clube da Estratégia Patrimonial</span><span>Planejamento Estratégico 2027</span>

@@ -70,6 +70,10 @@ export default async function Resumo({ searchParams }: { searchParams: Promise<{
             <div><Botao type="submit" variante="secundario">Confirmar perfil escolhido</Botao></div>
           </form>
         </Cartao>
+        <Cartao titulo="Fechamento de 2026">
+          <p className="text-sec">Números do ano, nota por área, o que passou, o que melhorar e as pendências. Itens que pedem ação viram tarefas de 2027.</p>
+          <div><Link href="/diagnostico/fechamento" className="inline-flex min-h-[48px] items-center rounded-full bg-ouro-texto px-6 font-bold text-white hover:bg-tinta">Abrir o fechamento de 2026</Link></div>
+        </Cartao>
         <div className="flex flex-wrap gap-3">
           <Link href="/diagnostico/1" className="inline-flex min-h-[48px] items-center rounded-full border-[1.5px] border-ouro-fio px-6 font-bold text-ouro-texto hover:bg-papel-2">Editar respostas</Link>
           <form action={refazerDiagnostico}><Botao type="submit" variante="secundario">Refazer diagnóstico</Botao></form>
