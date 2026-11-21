@@ -44,6 +44,34 @@ test.describe("resultados", () => {
     await expect(page.getByTestId("media-krs")).toHaveText("100%");
   });
 
+  test("kpi-e-medicoes", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await criarConta(page);
+    await page.goto("/metas?aba=kpis");
+    await page.getByRole("button", { name: "Novo indicador" }).click();
+    await page.getByLabel("Nome do indicador").fill("Taxa de conversão");
+    await page.getByLabel("Unidade").fill("%");
+    await page.getByLabel("Sentido").selectOption("maior");
+    await page.getByLabel("Meta", { exact: true }).fill("30");
+    await page.getByRole("button", { name: "Criar indicador" }).click();
+    const kpi = page.getByRole("article", { name: "Taxa de conversão" });
+    await expect(kpi.getByText("Sem medição", { exact: true })).toBeVisible();
+    for (const [i, [data, valor]] of [["2027-01-15", "20"], ["2027-02-10", "35"]].entries()) {
+      await kpi.getByLabel("Data da medição").fill(data);
+      await kpi.getByLabel("Valor medido").fill(valor);
+      await kpi.getByRole("button", { name: "Registrar medição" }).click();
+      await expect(kpi.getByText(`Medições (${i + 1})`)).toBeVisible();
+    }
+    await expect(kpi.getByText("Na meta", { exact: true })).toBeVisible();
+    await expect(kpi.getByRole("img", { name: "fev/2027: 35 %" })).toBeVisible();
+    await page.reload();
+    const k2 = page.getByRole("article", { name: "Taxa de conversão" });
+    await k2.getByRole("button", { name: "Excluir indicador: Taxa de conversão" }).click();
+    await expect(k2.getByRole("alertdialog")).toContainText("Excluir este indicador e as 2 medições?");
+    await k2.getByRole("button", { name: "Excluir de vez" }).click();
+    await expect(page.getByRole("article", { name: "Taxa de conversão" })).toHaveCount(0);
+  });
+
   test("sem-objetivo-avisa", async ({ page }) => {
     await criarConta(page);
     await page.goto("/metas?aba=okrs");

@@ -3,6 +3,8 @@ import { Corpo, FaixaTitulo } from "@/components/layout/FaixaTitulo";
 import { MetasFinanceiras } from "@/components/metas/MetasFinanceiras";
 import { AbasMetas, lerAba } from "@/components/resultados/AbasMetas";
 import { Okrs } from "@/components/resultados/Okrs";
+import { Kpis } from "@/components/resultados/Kpis";
+import { hojeSP } from "@/lib/domain/ciclo";
 import { exigirSessao } from "@/lib/data/sessao";
 import { obterMetas } from "@/lib/data/metas";
 import { obterResultados } from "@/lib/data/resultados";
@@ -28,6 +30,10 @@ export default async function Metas({ searchParams }: { searchParams: Promise<Re
         {aba === "okrs" && await (async () => {
           const r = await obterResultados(s.orgId);
           return <Okrs objetivos={r.objetivos} okrs={r.okrs} krs={r.krs} execucao={r.execucaoPorObjetivo} />;
+        })()}
+        {aba === "kpis" && await (async () => {
+          const r = await obterResultados(s.orgId);
+          return <Kpis kpis={r.kpis} medicoes={r.medicoes} objetivos={r.objetivos} hoje={hojeSP()} />;
         })()}
       </Corpo>
     </>
