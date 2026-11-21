@@ -205,6 +205,7 @@ export type Database = {
           ano: number
           created_at: string
           duplicado_de: string | null
+          meta_porque: string | null
           id: string
           org_id: string
           status: Database["public"]["Enums"]["cep_ciclo_status"]
@@ -214,6 +215,7 @@ export type Database = {
           ano: number
           created_at?: string
           duplicado_de?: string | null
+          meta_porque?: string | null
           id?: string
           org_id: string
           status?: Database["public"]["Enums"]["cep_ciclo_status"]
@@ -223,6 +225,7 @@ export type Database = {
           ano?: number
           created_at?: string
           duplicado_de?: string | null
+          meta_porque?: string | null
           id?: string
           org_id?: string
           status?: Database["public"]["Enums"]["cep_ciclo_status"]
@@ -1069,6 +1072,14 @@ export type Database = {
     Views: {
     }
     Functions: {
+      cep_definir_prioridade: {
+        Args: { p_categoria: string; p_confirmar: boolean; p_trimestre: number }
+        Returns: Json
+      }
+      cep_remover_prioridade: {
+        Args: { p_categoria: string; p_trimestre: number }
+        Returns: undefined
+      }
       cep_adicionar_item: {
         Args: { p_item: string; p_trimestre: number }
         Returns: Json
