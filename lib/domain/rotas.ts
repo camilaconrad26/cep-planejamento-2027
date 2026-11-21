@@ -5,6 +5,6 @@ export const ROTAS = {
   planoDeAcao: "/plano-de-acao", metas: "/metas", revisao: "/revisao", historico: "/historico", configuracoes: "/configuracoes", alunas: "/alunas",
 } as const;
 export type Rota = (typeof ROTAS)[keyof typeof ROTAS];
-export const ROTAS_CONSTRUIDAS: ReadonlySet<Rota> = new Set<Rota>([ROTAS.visaoGeral, ROTAS.diagnostico, ROTAS.planejamento, ROTAS.biblioteca, ROTAS.planoDeAcao, ROTAS.metas, ROTAS.revisao, ROTAS.historico, ROTAS.configuracoes]);
+export const ROTAS_CONSTRUIDAS: ReadonlySet<Rota> = new Set<Rota>([ROTAS.visaoGeral, ROTAS.diagnostico, ROTAS.planejamento, ROTAS.biblioteca, ROTAS.planoDeAcao, ROTAS.metas, ROTAS.revisao, ROTAS.historico, ROTAS.configuracoes, ROTAS.alunas]);
 export const EM_BREVE = "/visao-geral#em-breve";
 export const destino = (r: Rota, construidas: ReadonlySet<Rota> = ROTAS_CONSTRUIDAS) => (construidas.has(r) ? r : EM_BREVE);
