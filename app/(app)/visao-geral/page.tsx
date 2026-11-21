@@ -15,7 +15,6 @@ export const metadata: Metadata = { title: "Visão geral" };
 export const dynamic = "force-dynamic";
 
 const EM_BREVE = [
-  ["OKRs e indicadores", "resultados-chave e KPIs com medições e gráficos, dentro de Metas e indicadores"],
   ["Revisão estratégica e Histórico", "revisão de cada trimestre, relatórios e comparação entre ciclos"],
 ];
 
@@ -39,6 +38,16 @@ export default async function VisaoGeral() {
         <Cartao titulo="Execução do ciclo">
           <Numeros c={r.contagens} />
           {r.contagens.total === 0 && <p className="text-sec">As ações aparecem aqui quando você criar tarefas no fechamento de 2026 ou montar o plano.</p>}
+        </Cartao>
+        <Cartao titulo="Resultados">
+          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="min-w-0 border-t-[1.5px] border-ouro-fio pt-2.5"><dt className="text-[0.7rem] font-bold uppercase tracking-[.18em] text-sec">Média dos KRs</dt>
+              <dd data-testid="media-krs" className="font-display text-[1.7rem] font-bold tabular-nums text-tinta">{r.resultados.mediaKRs === null ? "—" : `${Math.round(r.resultados.mediaKRs * 100)}%`}</dd></div>
+            <div className="min-w-0 border-t-[1.5px] border-ouro-fio pt-2.5"><dt className="text-[0.7rem] font-bold uppercase tracking-[.18em] text-sec">KPIs na meta</dt>
+              <dd data-testid="kpis-na-meta" className="font-display text-[1.7rem] font-bold tabular-nums text-tinta">{r.resultados.kpis ? `${r.resultados.kpisNaMeta} de ${r.resultados.kpis}` : "—"}</dd></div>
+          </dl>
+          <p className="text-sec">Resultado é medido à parte da execução: concluir ações não marca uma meta como atingida.{" "}
+            <Link href="/metas?aba=okrs" className="font-bold text-ouro-texto underline underline-offset-4">Ver OKRs e indicadores</Link></p>
         </Cartao>
         <Cartao titulo={`Prioridades do ${r.retrato.trimestre}º trimestre`}>
           {r.prioridades.length

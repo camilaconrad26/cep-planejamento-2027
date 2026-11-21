@@ -173,7 +173,6 @@ export function MetasFinanceiras({ inicial, base2026, acoes = [] }: { inicial: M
 
       <AcoesVenda inicial={acoes} metaTrimestre={(t) => m.trimestres[t as 1 | 2 | 3 | 4]?.meta ?? 0} />
 
-      <p className="text-sec">OKRs, resultados-chave e indicadores com medições chegam na próxima etapa.</p>
     </div>
   );
 }
