@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { buscarTodas } from "@/lib/data/paginar";
 import { calcularRetrato, type TarefaResumo } from "@/lib/domain/retrato";
 import { contarMedicoesVencidas, mediaKRs, situacaoKPI, type KPI, type KR } from "@/lib/domain/resultados";
 
@@ -20,7 +21,8 @@ export async function montarRetrato(orgId: string, hoje: string) {
   const okrIds = (okrs.data ?? []).map((o) => o.id), kpiIds = (kpis.data ?? []).map((k) => k.id);
   const [krsR, medsR] = await Promise.all([
     okrIds.length ? sb.from("cep_key_results").select("id, okr_id, descricao, unidade, valor_inicial, alvo, valor_atual, prazo, updated_at").in("okr_id", okrIds) : { data: [] },
-    kpiIds.length ? sb.from("cep_kpi_measurements").select("id, kpi_id, data, valor").in("kpi_id", kpiIds).order("data") : { data: [] },
+    kpiIds.length ? buscarTodas((de, ate) => sb.from("cep_kpi_measurements").select("id, kpi_id, data, valor, created_at").in("kpi_id", kpiIds)
+      .order("data").order("created_at").order("id").range(de, ate)).then((data) => ({ data })) : { data: [] },
   ]);
   const krs: KR[] = (krsR.data ?? []).map((k) => ({ id: k.id, okrId: k.okr_id, descricao: k.descricao, unidade: k.unidade ?? "",
     inicial: k.valor_inicial === null ? null : Number(k.valor_inicial), alvo: k.alvo === null ? null : Number(k.alvo),
@@ -50,7 +52,7 @@ export async function montarRetrato(orgId: string, hoje: string) {
   const resultados = {
     mediaKRs: mediaKRs(krs), krsComMeta: krs.filter((k) => k.alvo !== null).length,
     kpis: kpiList.length,
-    kpisNaMeta: kpiList.filter((k) => situacaoKPI(k, (medsR.data ?? []).filter((m) => m.kpi_id === k.id).map((m) => ({ id: m.id, data: m.data, valor: Number(m.valor), nota: "" }))).situacao === "na-meta").length,
+    kpisNaMeta: kpiList.filter((k) => situacaoKPI(k, (medsR.data ?? []).filter((m) => m.kpi_id === k.id).map((m) => ({ id: m.id, data: m.data, valor: Number(m.valor), nota: "", criadoEm: m.created_at }))).situacao === "na-meta").length,
   };
   return { ...r, resultados, ciclo: { id: cicloId as string, ano } };
 }

@@ -6,19 +6,22 @@ import { GraficoLinha } from "@/components/resultados/GraficoLinha";
 import { lerNumero } from "@/components/resultados/util";
 import { criarKpi, editarKpi, excluirKpi, excluirMedicao, registrarMedicao } from "@/lib/data/resultadosAcoes";
 import { formatarData } from "@/lib/domain/acoes";
-import { NOME_SITUACAO, formatarNumero, medicaoVencida, serieMensal, situacaoKPI, type KPI, type Medicao } from "@/lib/domain/resultados";
+import { NOME_SITUACAO, dataMedicaoValida, formatarNumero, medicaoVencida, serieMensal, situacaoKPI, type KPI, type Medicao } from "@/lib/domain/resultados";
 
 type Objetivo = { id: string; titulo: string };
 const campo = "flex min-w-0 flex-col gap-1.5 text-[0.9rem] font-bold text-tinta";
 const v = (n: number | null) => (n === null ? "" : String(n).replace(".", ","));
 
 function FormKpi({ kpi, objetivos, onFechar }: { kpi?: KPI; objetivos: Objetivo[]; onFechar: () => void }) {
+  const [aviso, setAviso] = useState("");
   const [d, setD] = useState({ nome: kpi?.nome ?? "", unidade: kpi?.unidade ?? "", sentido: kpi?.sentido ?? "maior", meta: v(kpi?.meta ?? null), objetivoId: kpi?.objetivoId ?? "" });
   const { enviando, erro, rodar } = useAcao();
   const id = useId();
   async function enviar(e: FormEvent) {
     e.preventDefault();
-    const dados = { nome: d.nome, unidade: d.unidade, sentido: d.sentido as "maior" | "menor", meta: lerNumero(d.meta), objetivoId: d.objetivoId || null };
+    const meta = lerNumero(d.meta);
+    if (meta === undefined) { setAviso("Use só números na meta."); return; }
+    const dados = { nome: d.nome, unidade: d.unidade, sentido: d.sentido as "maior" | "menor", meta, objetivoId: d.objetivoId || null };
     const r = await rodar(() => (kpi ? editarKpi(kpi.id, dados) : criarKpi(dados)));
     if (r?.ok) onFechar();
   }
@@ -40,7 +43,7 @@ function FormKpi({ kpi, objetivos, onFechar }: { kpi?: KPI; objetivos: Objetivo[
         <Botao type="submit" tamanho="mini" disabled={enviando || !d.nome.trim()}>{kpi ? "Salvar indicador" : "Criar indicador"}</Botao>
         <Botao tamanho="mini" variante="secundario" onClick={onFechar}>Cancelar</Botao>
       </div>
-      <Erro t={erro} />
+      <Erro t={aviso || erro} />
     </form>
   );
 }
@@ -52,6 +55,7 @@ function KpiCartao({ kpi, medicoes, objetivos, hoje }: { kpi: KPI; medicoes: Med
   const [editando, setEditando] = useState(false);
   const [excluir, setExcluir] = useState(false);
   const [m, setM] = useState({ data: hoje, valor: "", nota: "" });
+  const [aviso, setAviso] = useState("");
   const { enviando, erro, rodar } = useAcao();
   const id = useId();
   const s = situacaoKPI(kpi, medicoes);
@@ -59,7 +63,11 @@ function KpiCartao({ kpi, medicoes, objetivos, hoje }: { kpi: KPI; medicoes: Med
   const historico = [...medicoes].sort((a, b) => (a.data < b.data ? 1 : -1));
   async function registrar(e: FormEvent) {
     e.preventDefault();
-    const r = await rodar(() => registrarMedicao({ kpiId: kpi.id, data: m.data, valor: lerNumero(m.valor), nota: m.nota }));
+    setAviso("");
+    const valor = lerNumero(m.valor);
+    if (valor === undefined || valor === null) { setAviso("Use só números no valor."); return; }
+    if (!dataMedicaoValida(m.data, hoje)) { setAviso("Escolha uma data até hoje."); return; }
+    const r = await rodar(() => registrarMedicao({ kpiId: kpi.id, data: m.data, valor, nota: m.nota }));
     if (r?.ok) setM((x) => ({ ...x, valor: "", nota: "" }));
   }
   return (
@@ -89,12 +97,12 @@ function KpiCartao({ kpi, medicoes, objetivos, hoje }: { kpi: KPI; medicoes: Med
         </div>
       )}
       <form onSubmit={registrar} className="grid gap-2 sm:grid-cols-[auto_auto_1fr_auto] sm:items-end">
-        <label htmlFor={`${id}-d`} className={campo}>Data da medição<input id={`${id}-d`} type="date" value={m.data} onChange={(e) => setM({ ...m, data: e.target.value })} className="campo font-normal" /></label>
+        <label htmlFor={`${id}-d`} className={campo}>Data da medição<input id={`${id}-d`} type="date" max={hoje} value={m.data} onChange={(e) => setM({ ...m, data: e.target.value })} className="campo font-normal" /></label>
         <label htmlFor={`${id}-v`} className={campo}>Valor medido<input id={`${id}-v`} inputMode="decimal" value={m.valor} onChange={(e) => setM({ ...m, valor: e.target.value })} className="campo w-full text-right font-normal sm:w-32" /></label>
         <label htmlFor={`${id}-t`} className={campo}>Nota<input id={`${id}-t`} value={m.nota} onChange={(e) => setM({ ...m, nota: e.target.value })} maxLength={500} placeholder="Opcional" className="campo font-normal" /></label>
         <Botao type="submit" tamanho="mini" disabled={enviando || !m.valor.trim() || !m.data}>Registrar medição</Botao>
       </form>
-      <Erro t={erro} />
+      <Erro t={aviso || erro} />
       <GraficoLinha nome={kpi.nome} unidade={kpi.unidade} meta={kpi.meta} serie={serieMensal(medicoes)} />
       {historico.length > 0 && (
         <details>

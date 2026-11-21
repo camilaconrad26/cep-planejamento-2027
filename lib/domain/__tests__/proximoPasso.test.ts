@@ -18,7 +18,13 @@ it("categoria prioritária sem ação", () =>
 it("atrasadas na execução", () => expect(proximoPasso({ ...base, atrasadas: 2 }).codigo).toBe("atrasadas"));
 it("na fase de planejamento atraso não é cobrado", () =>
   expect(proximoPasso({ ...base, fase: "planejamento", atrasadas: 5 }).codigo).not.toBe("atrasadas"));
-it("medição vencida", () => expect(proximoPasso({ ...base, medicaoVencida: 1 }).codigo).toBe("medir"));
+it("medição vencida leva à aba de indicadores", () => {
+  const p = proximoPasso({ ...base, medicaoVencida: 1 });
+  expect(p.codigo).toBe("medir");
+  expect(p.href).toBe("/metas?aba=kpis");
+});
+it("na fase de planejamento, medição vencida não vira próximo passo", () =>
+  expect(proximoPasso({ ...base, fase: "planejamento", medicaoVencida: 2 }).codigo).not.toBe("medir"));
 it("revisão do trimestre anterior", () =>
   expect(proximoPasso({ ...base, trimestreAnteriorSemRevisao: true }).codigo).toBe("revisao"));
 it("na fase de planejamento revisão não é cobrada", () =>

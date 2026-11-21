@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
 import { obterSessao } from "@/lib/data/sessao";
 import { dataValida } from "@/lib/domain/acoes";
+import { dataMedicaoValida } from "@/lib/domain/resultados";
+import { hojeSP } from "@/lib/domain/ciclo";
 
 type R = { ok?: string; erro?: string };
 const FALHA = "Não foi possível salvar. Tente de novo.";
@@ -54,6 +56,7 @@ function validarKr(d: CamposKr) {
   if (!descricao) return { erro: "Descreva o resultado-chave." };
   const inicial = num(d.inicial), alvo = num(d.alvo), atual = num(d.atual);
   if (inicial === undefined || alvo === undefined || atual === undefined) return { erro: "Use só números nos valores." };
+  if (alvo !== null && inicial === null) return { erro: "Informe o valor inicial para calcular o progresso." };
   if (d.prazo !== null && d.prazo !== undefined && !dataValida(d.prazo)) return { erro: "Data inválida." };
   return { v: { descricao, unidade: txt(d.unidade, 40) || null, valor_inicial: inicial, alvo, valor_atual: atual, prazo: d.prazo || null } };
 }
@@ -115,7 +118,7 @@ export async function excluirKpi(id: string): Promise<R> {
 }
 export async function registrarMedicao(d: { kpiId: string; data: string; valor: number | null; nota: string }): Promise<R> {
   const c = await ctx(); if (!c) return { erro: "sessao" };
-  if (!dataValida(d.data)) return { erro: "Escolha a data da medição." };
+  if (!dataMedicaoValida(d.data, hojeSP())) return { erro: "Escolha uma data até hoje." };
   const valor = num(d.valor); if (valor === undefined || valor === null) return { erro: "Informe o valor medido." };
   const { data: k } = await c.sb.from("cep_kpis").select("id").eq("id", d.kpiId).eq("org_id", c.s.orgId).maybeSingle();
   if (!k) return { erro: FALHA };

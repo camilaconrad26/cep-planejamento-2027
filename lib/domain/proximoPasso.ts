@@ -24,8 +24,10 @@ export function proximoPasso(s: Retrato, construidas?: ReadonlySet<Rota>): Passo
     return p("categoria-sem-acao", "Transforme prioridade em ação", `Há categoria prioritária ainda sem nenhuma ação no plano (${s.categoriasSemAcao.join(", ")}).`, ROTAS.biblioteca, "Escolher ações", construidas);
   if (ex && s.atrasadas > 0)
     return p("atrasadas", s.atrasadas === 1 ? "1 ação atrasada" : `${s.atrasadas} ações atrasadas`, "Reveja o prazo ou conclua as ações que passaram da data.", ROTAS.planoDeAcao, "Ver ações atrasadas", construidas);
-  if (s.medicaoVencida > 0)
-    return p("medir", "Atualize seus indicadores", "Há resultado-chave ou indicador sem medição há mais de 30 dias.", ROTAS.metas, "Lançar medições", construidas);
+  if (ex && s.medicaoVencida > 0) {
+    const passo = p("medir", "Atualize seus indicadores", "Há resultado-chave ou indicador sem medição há mais de 30 dias.", ROTAS.metas, "Lançar medições", construidas);
+    return passo.href === ROTAS.metas ? { ...passo, href: `${ROTAS.metas}?aba=kpis` } : passo;
+  }
   if (ex && s.trimestreAnteriorSemRevisao)
     return p("revisao", "Revise o trimestre que terminou", "Registre o que foi feito, o que travou e o que muda no próximo trimestre.", ROTAS.revisao, "Fazer a revisão", construidas);
   if (s.vencendo7dias > 0)

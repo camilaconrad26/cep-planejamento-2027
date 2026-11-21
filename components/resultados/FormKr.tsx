@@ -12,12 +12,17 @@ const v = (n: number | null) => (n === null ? "" : String(n).replace(".", ","));
 export function FormKr({ okrId, kr, onFechar }: { okrId: string; kr?: KR; onFechar: () => void }) {
   const [d, setD] = useState({ descricao: kr?.descricao ?? "", unidade: kr?.unidade ?? "", inicial: v(kr?.inicial ?? null), alvo: v(kr?.alvo ?? null), atual: v(kr?.atual ?? null), prazo: kr?.prazo ?? "" });
   const { enviando, erro, rodar } = useAcao();
+  const [aviso, setAviso] = useState("");
   const id = useId();
   const campo = "flex min-w-0 flex-col gap-1.5 text-[0.9rem] font-bold text-tinta";
   const muda = (k: keyof typeof d) => (e: { target: { value: string } }) => setD((x) => ({ ...x, [k]: e.target.value }));
   async function enviar(e: FormEvent) {
     e.preventDefault();
-    const dados = { descricao: d.descricao, unidade: d.unidade, inicial: lerNumero(d.inicial), alvo: lerNumero(d.alvo), atual: lerNumero(d.atual), prazo: d.prazo || null };
+    setAviso("");
+    const inicial = lerNumero(d.inicial), alvo = lerNumero(d.alvo), atual = lerNumero(d.atual);
+    if (inicial === undefined || alvo === undefined || atual === undefined) { setAviso("Use só números nos valores."); return; }
+    if (alvo !== null && inicial === null) { setAviso("Informe o valor inicial para calcular o progresso."); return; }
+    const dados = { descricao: d.descricao, unidade: d.unidade, inicial, alvo, atual, prazo: d.prazo || null };
     const r = await rodar(() => (kr ? editarKr(kr.id, dados) : criarKr(okrId, dados)));
     if (r?.ok) onFechar();
   }
@@ -32,12 +37,12 @@ export function FormKr({ okrId, kr, onFechar }: { okrId: string; kr?: KR; onFech
         <label htmlFor={`${id}-t`} className={campo}>Valor atual<input id={`${id}-t`} inputMode="decimal" value={d.atual} onChange={muda("atual")} className="campo text-right font-normal" /></label>
         <label htmlFor={`${id}-p`} className={campo}>Prazo<input id={`${id}-p`} type="date" value={d.prazo} onChange={muda("prazo")} className="campo font-normal" /></label>
       </div>
-      <p className="text-[0.85rem] text-sec">Sem alvo, o resultado-chave fica como “sem meta numérica” e não entra no cálculo.</p>
+      <p className="text-[0.85rem] text-sec">Sem alvo, o resultado-chave fica como “sem meta numérica” e não entra no cálculo. Com alvo, informe também o valor inicial.</p>
       <div className="flex flex-wrap gap-2">
         <Botao type="submit" tamanho="mini" disabled={enviando || !d.descricao.trim()}>{kr ? "Salvar resultado-chave" : "Criar resultado-chave"}</Botao>
         <Botao tamanho="mini" variante="secundario" onClick={onFechar}>Cancelar</Botao>
       </div>
-      <Erro t={erro} />
+      <Erro t={aviso || erro} />
     </form>
   );
 }

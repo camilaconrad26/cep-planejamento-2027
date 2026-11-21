@@ -56,14 +56,19 @@ test.describe("resultados", () => {
     await page.getByRole("button", { name: "Criar indicador" }).click();
     const kpi = page.getByRole("article", { name: "Taxa de conversão" });
     await expect(kpi.getByText("Sem medição", { exact: true })).toBeVisible();
-    for (const [i, [data, valor]] of [["2027-01-15", "20"], ["2027-02-10", "35"]].entries()) {
+    await kpi.getByLabel("Data da medição").fill("2072-01-15"); // data no futuro é recusada
+    await kpi.getByLabel("Valor medido").fill("20");
+    await kpi.getByRole("button", { name: "Registrar medição" }).click();
+    await expect(kpi.getByText("Sem medição", { exact: true })).toBeVisible(); // o campo de data barra o futuro: nada é registrado
+    await expect(kpi.getByText(/^Medições \(/)).toHaveCount(0);
+    for (const [i, [data, valor]] of [["2026-09-15", "20"], ["2026-10-10", "35"]].entries()) {
       await kpi.getByLabel("Data da medição").fill(data);
       await kpi.getByLabel("Valor medido").fill(valor);
       await kpi.getByRole("button", { name: "Registrar medição" }).click();
       await expect(kpi.getByText(`Medições (${i + 1})`)).toBeVisible();
     }
     await expect(kpi.getByText("Na meta", { exact: true })).toBeVisible();
-    await expect(kpi.getByRole("img", { name: "fev/2027: 35 %" })).toBeVisible();
+    await expect(kpi.getByRole("img", { name: "out/2026: 35 %" })).toBeVisible();
     await page.reload();
     const k2 = page.getByRole("article", { name: "Taxa de conversão" });
     await k2.getByRole("button", { name: "Excluir indicador: Taxa de conversão" }).click();

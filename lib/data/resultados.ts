@@ -1,6 +1,7 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
 import type { KPI, KR, Medicao } from "@/lib/domain/resultados";
+import { buscarTodas } from "@/lib/data/paginar";
 
 const um = <T,>(x: T | T[] | null): T | null => (Array.isArray(x) ? x[0] ?? null : x);
 export type Okr = { id: string; objetivoId: string; titulo: string; trimestre: number | null };
@@ -20,7 +21,8 @@ export async function obterResultados(orgId: string) {
   const okrIds = (okrs.data ?? []).map((o) => o.id), kpiIds = (kpis.data ?? []).map((k) => k.id);
   const [krs, meds] = await Promise.all([
     okrIds.length ? sb.from("cep_key_results").select("id, okr_id, descricao, unidade, valor_inicial, alvo, valor_atual, prazo, updated_at").in("okr_id", okrIds).order("created_at") : { data: [] },
-    kpiIds.length ? sb.from("cep_kpi_measurements").select("id, kpi_id, data, valor, nota").in("kpi_id", kpiIds).order("data") : { data: [] },
+    kpiIds.length ? buscarTodas((de, ate) => sb.from("cep_kpi_measurements").select("id, kpi_id, data, valor, nota, created_at").in("kpi_id", kpiIds)
+      .order("data").order("created_at").order("id").range(de, ate)).then((data) => ({ data })) : { data: [] },
   ]);
   const objetivos: ObjetivoR[] = (objs.data ?? []).map((o) => {
     const c = um(o.cep_categories as unknown as { nome: string; ordem: number } | { nome: string; ordem: number }[] | null);
@@ -32,7 +34,7 @@ export async function obterResultados(orgId: string) {
     execucaoPorObjetivo[o.id] = t.length ? t.filter((x) => x.status === "concluido").length / t.length : null;
   }
   const medicoes: Record<string, Medicao[]> = {};
-  for (const m of meds.data ?? []) (medicoes[m.kpi_id] ??= []).push({ id: m.id, data: m.data, valor: Number(m.valor), nota: m.nota ?? "" });
+  for (const m of meds.data ?? []) (medicoes[m.kpi_id] ??= []).push({ id: m.id, data: m.data, valor: Number(m.valor), nota: m.nota ?? "", criadoEm: m.created_at });
   return {
     cicloId: cicloId as string, objetivos, execucaoPorObjetivo, medicoes,
     okrs: (okrs.data ?? []).map((o): Okr => ({ id: o.id, objetivoId: o.objective_id, titulo: o.titulo, trimestre: o.trimestre })),
