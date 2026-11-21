@@ -33,3 +33,7 @@ export function lerFechamento(bruto: unknown): Fechamento {
   return { faturamento: num(b.faturamento), meta: num(b.meta), contratos: num(b.contratos), origem: typeof b.origem === "string" ? b.origem : "",
     notas: (b.notas && typeof b.notas === "object" ? b.notas : {}) as Fechamento["notas"], listas };
 }
+
+/** Listas do fechamento com algum item, na ordem da tela (para o relatório impresso e o da mentora). */
+export const listasPreenchidas = (f: Fechamento) =>
+  LISTAS.filter((l) => f.listas[l.chave].length > 0).map((l) => ({ chave: l.chave, rotulo: l.rotulo, textos: f.listas[l.chave].map((i) => i.texto) }));

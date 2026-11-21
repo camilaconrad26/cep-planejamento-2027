@@ -18,7 +18,7 @@ async function ctx() {
 }
 
 /** Gravação automática das respostas e do faturamento realizado do trimestre. */
-export async function salvarRevisao(trimestre: number, d: { respostas: RespostasRevisao; faturamento: number }): Promise<{ ok?: true; erro?: string }> {
+export async function salvarRevisao(trimestre: number, d: { respostas: RespostasRevisao; faturamento?: number }): Promise<{ ok?: true; erro?: string }> {
   const c = await ctx(); if (!c) return { erro: "sessao" };
   if (!c.ciclo || !triOk(trimestre)) return { erro: FALHA };
   const respostas: RespostasRevisao = {};
@@ -27,7 +27,8 @@ export async function salvarRevisao(trimestre: number, d: { respostas: Respostas
   const base = { org_id: c.s.orgId, cycle_id: c.ciclo, trimestre };
   const [a, b] = await Promise.all([
     c.sb.from("cep_reviews").upsert({ ...base, respostas }, { onConflict: "cycle_id,trimestre" }),
-    c.sb.from("cep_quarter_results").upsert({ ...base, faturamento_realizado: Number.isFinite(fat) && fat > 0 ? fat : 0 }, { onConflict: "cycle_id,trimestre" }),
+    d.faturamento === undefined ? Promise.resolve({ error: null }) // não veio: não mexe no valor gravado
+      : c.sb.from("cep_quarter_results").upsert({ ...base, faturamento_realizado: Number.isFinite(fat) && fat > 0 ? fat : 0 }, { onConflict: "cycle_id,trimestre" }),
   ]);
   if (a.error || b.error) return { erro: FALHA };
   return { ok: true };

@@ -1,4 +1,5 @@
 "use server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
 import { voltaSegura } from "@/lib/domain/volta";
@@ -6,6 +7,11 @@ import { voltaSegura } from "@/lib/domain/volta";
 export type EstadoForm = { erro?: string; campos?: Record<string, string> };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const txt = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
+/** IP de quem está se cadastrando (a Vercel põe o do visitante em primeiro), para o limite de tentativas ser por pessoa. */
+async function ipVisitante(): Promise<string> {
+  const h = await headers();
+  return ((h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || "").slice(0, 64);
+}
 
 export async function entrar(_: EstadoForm, f: FormData): Promise<EstadoForm> {
   const email = txt(f, "email").toLowerCase(), senha = String(f.get("senha") ?? "");
@@ -26,7 +32,7 @@ export async function criarConta(_: EstadoForm, f: FormData): Promise<EstadoForm
   if (senha.length < 8) return { erro: "A senha precisa de pelo menos 8 caracteres.", campos };
   const r = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/cep-conta`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! },
+    headers: { "Content-Type": "application/json", apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, "x-cep-visitante": await ipVisitante() },
     body: JSON.stringify({ acao: "cadastro", nome, email, senha }),
     cache: "no-store",
   }).catch((e) => { console.error("cep-conta: falha de rede", e?.cause ?? e); return null; });

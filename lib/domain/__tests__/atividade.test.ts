@@ -18,3 +18,11 @@ test("agrupa repetições seguidas (gravação automática)", () => {
   expect(agruparAtividades([a("Metas financeiras atualizadas", "3"), a("Metas financeiras atualizadas", "2"), a("Ação criada: X", "1")]))
     .toEqual([{ texto: "Metas financeiras atualizadas", em: "3", vezes: 2 }, { texto: "Ação criada: X", em: "1", vezes: 1 }]);
 });
+
+test("ver mais: de 50 em 50 até 500, depois para", async () => {
+  const { proximoLimite } = await import("@/lib/domain/atividade");
+  expect(proximoLimite(50, true)).toBe(100);
+  expect(proximoLimite(450, true)).toBe(500);
+  expect(proximoLimite(500, true)).toBeNull();
+  expect(proximoLimite(100, false)).toBeNull();
+});

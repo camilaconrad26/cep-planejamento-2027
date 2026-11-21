@@ -40,3 +40,8 @@ export function agruparAtividades<T extends { texto: string; em: string }>(l: T[
   }
   return r;
 }
+
+/** "Ver mais" do histórico: de 50 em 50, no máximo 500 alterações; null = não há link. */
+export const MAX_HISTORICO = 500;
+export const proximoLimite = (limite: number, temMais: boolean): number | null =>
+  temMais && limite < MAX_HISTORICO ? Math.min(MAX_HISTORICO, limite + 50) : null;

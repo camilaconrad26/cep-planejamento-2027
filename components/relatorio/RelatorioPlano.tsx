@@ -5,7 +5,7 @@ import { obterResultados } from "@/lib/data/resultados";
 import { obterAcoes } from "@/lib/data/acoes";
 import { obterRevisoes } from "@/lib/data/revisao";
 import { montarArvore } from "@/lib/domain/arvore";
-import { lerFechamento } from "@/lib/domain/fechamento";
+import { lerFechamento, listasPreenchidas } from "@/lib/domain/fechamento";
 import { nomePerfil } from "@/lib/domain/perfis";
 import { formatarMoeda } from "@/lib/domain/moeda";
 import { ALTURAS } from "@/lib/domain/metas";
@@ -18,7 +18,9 @@ const pct = (f: number | null) => (f === null ? "—" : `${Math.round(f * 100)}%
 const moeda = (n: number) => (n ? formatarMoeda(n) : "—");
 
 /** O plano inteiro, só para leitura: usado na impressão (a própria aluna) e no painel da mentora. */
-export async function RelatorioPlano({ orgId, userId }: { orgId: string; userId: string }) {
+/** `titulo`: h1 na página de impressão; h2 quando o relatório está dentro de outra página com título (mentora). */
+export async function RelatorioPlano({ orgId, userId, titulo = "h1" }: { orgId: string; userId: string; titulo?: "h1" | "h2" }) {
+  const Titulo = titulo;
   const sb = await criarClienteServidor();
   const [perfil, diag, plano, metas, res, acoes, rev] = await Promise.all([
     sb.from("cep_profiles").select("nome, email, perfil").eq("user_id", userId).maybeSingle(),
@@ -34,15 +36,13 @@ export async function RelatorioPlano({ orgId, userId }: { orgId: string; userId:
     <article className="flex flex-col gap-4 text-[0.95rem] text-tinta">
       <header className="flex flex-col gap-1">
         <p className="text-[0.72rem] font-bold uppercase tracking-[.18em] text-ouro-texto">Planejamento Estratégico 2027 · CEP</p>
-        <h1 className="font-display text-2xl font-bold">{perfil.data?.nome ?? "Aluna"}</h1>
+        <Titulo className="font-display text-2xl font-bold">{perfil.data?.nome ?? "Aluna"}</Titulo>
         <p className="text-sec">{perfil.data?.email} · {nomePerfil(perfil.data?.perfil ?? null) ?? "Perfil não definido"} · Diagnóstico {diag.data?.concluido_em ? "concluído" : diag.data ? "em andamento" : "não iniciado"}</p>
       </header>
 
       <section><H2>Fechamento de 2026</H2>
         <p>Faturamento {moeda(f.faturamento)} · Meta {moeda(f.meta)} · Contratos {f.contratos || "—"}{f.origem && ` · Origem: ${f.origem}`}</p>
-        {(["deuCerto", "naoFuncionou", "parar", "continuar", "comecar"] as const).map((k) => f.listas[k].length > 0 && (
-          <p key={k}><b>{{ deuCerto: "Deu certo", naoFuncionou: "Não funcionou", parar: "Parar", continuar: "Continuar", comecar: "Começar" }[k]}:</b> {f.listas[k].map((i) => i.texto).join("; ")}</p>
-        ))}
+        {listasPreenchidas(f).map((l) => <p key={l.chave}><b>{l.rotulo}:</b> {l.textos.join("; ")}</p>)}
       </section>
 
       <section><H2>Prioridades por trimestre</H2>

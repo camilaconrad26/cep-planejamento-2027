@@ -15,11 +15,11 @@ export function Tabela({ acoes, hoje, ordem, sentido, hrefOrdem }: { acoes: Acao
   const [aberta, setAberta] = useState<string | null>(null);
   const cab = (o: Ordem | null, nome: string) => (
     <th scope="col" className={th} aria-sort={o && o === ordem ? (sentido === "asc" ? "ascending" : "descending") : undefined}>
-      {o ? <Link href={hrefOrdem[o]} className="underline-offset-4 hover:text-tinta hover:underline">{nome}{o === ordem ? (sentido === "asc" ? " ↑" : " ↓") : ""}</Link> : nome}
+      {o ? <Link href={hrefOrdem[o]} className="inline-flex min-h-6 items-center underline-offset-4 hover:text-tinta hover:underline">{nome}{o === ordem ? (sentido === "asc" ? " ↑" : " ↓") : ""}</Link> : nome}
     </th>
   );
   return (
-    <div role="region" aria-label="Tabela de ações" tabIndex={0} className="overflow-x-auto rounded-cartao border border-linha bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ouro-texto">
+    <div role="region" aria-label="Tabela de ações" tabIndex={0} className="relative overflow-x-auto rounded-cartao border border-linha bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ouro-texto">
       <table className="w-full min-w-[60rem] border-collapse text-[0.93rem]">
         <thead className="border-b border-linha bg-papel-2"><tr>
           {cab("titulo", "Ação")}{cab(null, "Categoria")}{cab(null, "Nível")}{cab(null, "Responsável")}{cab("prioridade", "Prioridade")}

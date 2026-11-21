@@ -5,7 +5,7 @@ export async function buscarTodas<T>(pagina: (de: number, ate: number) => Promis
   const todas: T[] = [];
   for (let de = 0; ; de += 1000) {
     const { data, error } = await pagina(de, de + 999);
-    if (error) throw new Error("Não foi possível carregar as medições.");
+    if (error) throw new Error("Não foi possível carregar os dados.");
     todas.push(...(data ?? []));
     if (!data || data.length < 1000) return todas;
   }

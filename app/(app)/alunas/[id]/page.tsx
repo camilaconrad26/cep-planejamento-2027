@@ -28,7 +28,7 @@ export default async function PlanoDaAluna({ params }: { params: Promise<{ id: s
         <Link href="/alunas" className="self-start text-ouro underline underline-offset-4 hover:text-creme">Voltar para a lista</Link>
       </FaixaTitulo>
       <Corpo>
-        <Cartao><RelatorioPlano orgId={orgId} userId={id} /></Cartao>
+        <Cartao><RelatorioPlano orgId={orgId} userId={id} titulo="h2" /></Cartao>
         <Cartao titulo="Senha provisória"><RedefinirSenha userId={id} nome={nome} /></Cartao>
       </Corpo>
     </>
