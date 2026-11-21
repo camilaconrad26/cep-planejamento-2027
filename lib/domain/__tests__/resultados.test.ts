@@ -47,3 +47,14 @@ test("escala com números redondos", () => {
   expect(escala(20, 35)).toEqual([20, 25, 30, 35]);
   expect(escala(5, 5)).toEqual([0, 5, 10]);
 });
+
+test("conta KRs com meta e KPIs sem medição há mais de 30 dias", async () => {
+  const { contarMedicoesVencidas } = await import("@/lib/domain/resultados");
+  const krs = [
+    { ...kr(0, 10, 2), atualizadoEm: "2026-12-01T00:00:00Z" }, // vencido
+    { ...kr(0, null, 2), atualizadoEm: "2026-12-01T00:00:00Z" }, // sem meta numérica: não conta
+    { ...kr(0, 10, 2), atualizadoEm: "2027-01-20T00:00:00Z" },
+  ];
+  const kpis = [{ ...kpi("maior", 1), id: "a" }, { ...kpi("maior", 1), id: "b", criadoEm: "2027-01-25T00:00:00Z" }];
+  expect(contarMedicoesVencidas(krs, kpis, { a: "2026-12-20" }, "2027-02-01")).toBe(2);
+});

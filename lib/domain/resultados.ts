@@ -67,3 +67,10 @@ export function escala(min: number, max: number, passos = 4): number[] {
 
 export const nomeMes = (mes: string) =>
   `${["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"][Number(mes.slice(5, 7)) - 1]}/${mes.slice(0, 4)}`;
+
+/** Regra 5 do próximo passo: KRs com meta numérica e KPIs sem medição há mais de 30 dias. */
+export function contarMedicoesVencidas(krs: KR[], kpis: KPI[], ultimaPorKpi: Record<string, string | undefined>, hoje: string): number {
+  const k = krs.filter((r) => fin(r.alvo) && medicaoVencida(r.atualizadoEm.slice(0, 10), r.atualizadoEm, hoje)).length;
+  const p = kpis.filter((x) => medicaoVencida(ultimaPorKpi[x.id] ?? null, x.criadoEm, hoje)).length;
+  return k + p;
+}
