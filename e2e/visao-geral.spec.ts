@@ -39,6 +39,6 @@ test("depois-do-diagnostico-e-tarefa", async ({ page }) => {
   await expect(passo.getByRole("heading", { name: "Escolha as prioridades do 1º trimestre" })).toBeVisible();
   await expect(page.getByTestId("total-acoes")).toHaveText("1");
   await passo.getByRole("link", { name: "Escolher prioridades" }).click();
-  await expect(page).toHaveURL(/#em-breve/);
-  await expect(page.locator("#em-breve")).toBeVisible();
+  await expect(page).toHaveURL(/\/planejamento/);
+  await expect(page.getByRole("region", { name: "Prioridades do 1º trimestre" })).toBeVisible();
 });
