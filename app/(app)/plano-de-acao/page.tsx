@@ -4,6 +4,7 @@ import { Corpo, FaixaTitulo } from "@/components/layout/FaixaTitulo";
 import { FiltrosAcoes } from "@/components/acoes/FiltrosAcoes";
 import { Tabela } from "@/components/acoes/Tabela";
 import { ListaPrioridades } from "@/components/acoes/ListaPrioridades";
+import { Kanban } from "@/components/acoes/Kanban";
 import { exigirSessao } from "@/lib/data/sessao";
 import { obterAcoes } from "@/lib/data/acoes";
 import { VISOES_ACOES, filtrarAcoes, lerFiltrosAcoes, ordenarAcoes, urlAcoes, type Ordem } from "@/lib/domain/acoes";
@@ -17,7 +18,8 @@ export default async function PlanoDeAcao({ searchParams }: { searchParams: Prom
   const [q, d] = await Promise.all([searchParams, obterAcoes(s.orgId)]);
   const hoje = hojeSP();
   const f = lerFiltrosAcoes(q, d.categorias.map((c) => c.slug));
-  const visiveis = ordenarAcoes(filtrarAcoes(d.acoes, f, hoje), f.ordem, f.sentido);
+  // No Kanban a coluna "Concluída" sempre aparece com as concluídas (o filtro "Mostrar concluídas" vale para as outras visões).
+  const visiveis = ordenarAcoes(filtrarAcoes(d.acoes, f.visao === "kanban" ? { ...f, concluidas: true } : f, hoje), f.ordem, f.sentido);
   const hrefOrdem = Object.fromEntries((["prazo", "prioridade", "titulo", "status", "inicio"] as Ordem[])
     .map((o) => [o, urlAcoes(f, { ordem: o, sentido: f.ordem === o && f.sentido === "asc" ? "desc" : o === "prioridade" ? "desc" : "asc" })])) as Record<Ordem, string>;
 
@@ -40,8 +42,9 @@ export default async function PlanoDeAcao({ searchParams }: { searchParams: Prom
           <>
             <FiltrosAcoes f={f} categorias={d.categorias} />
             <p className="text-sec" role="status">{visiveis.length === 1 ? "1 ação" : `${visiveis.length} ações`}</p>
-            {visiveis.length === 0 && <p className="text-sec">Nenhuma ação com esses filtros.</p>}
-            {visiveis.length > 0 && (f.visao === "prioridades"
+            {visiveis.length === 0 && f.visao !== "kanban" && <p className="text-sec">Nenhuma ação com esses filtros.</p>}
+            {f.visao === "kanban" && <Kanban acoes={visiveis} hoje={hoje} />}
+            {f.visao !== "kanban" && visiveis.length > 0 && (f.visao === "prioridades"
               ? <ListaPrioridades acoes={visiveis} hoje={hoje} />
               : <Tabela acoes={visiveis} hoje={hoje} ordem={f.ordem} sentido={f.sentido} hrefOrdem={hrefOrdem} />)}
           </>

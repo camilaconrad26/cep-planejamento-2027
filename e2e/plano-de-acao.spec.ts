@@ -99,6 +99,30 @@ test.describe("plano de ação", () => {
     await expect(linhas(page).filter({ hasText: "Gravar vídeo" })).toContainText("100%");
   });
 
+  test("kanban-arrastar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await criarConta(page);
+    await criarAcoes(page);
+    await page.goto("/plano-de-acao?visao=kanban");
+    const cartao = page.getByRole("region", { name: /Não iniciada/ }).locator("li", { hasText: "Reunião com contador" });
+    await cartao.dragTo(page.getByRole("region", { name: /Em andamento/ }));
+    await expect(page.getByRole("region", { name: /Em andamento/ })).toContainText("Reunião com contador");
+    await expect(page.getByRole("status").filter({ hasText: "Ação salva." })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("region", { name: /Em andamento/ })).toContainText("Reunião com contador");
+  });
+
+  test("kanban-teclado", async ({ page }) => {
+    await criarConta(page);
+    await criarAcoes(page);
+    await page.goto("/plano-de-acao?visao=kanban");
+    await page.getByLabel('Mover "Gravar vídeo" para').selectOption("concluido");
+    await expect(page.getByRole("region", { name: /Concluída/ })).toContainText("Gravar vídeo");
+    await page.reload();
+    await expect(page.getByRole("region", { name: /Concluída/ })).toContainText("Gravar vídeo");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  });
+
   test("sem-acoes", async ({ page }) => {
     await criarConta(page);
     await page.goto("/plano-de-acao");
