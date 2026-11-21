@@ -2,19 +2,22 @@
 // verify_jwt desligado: o cadastro é público e a ação "redefinir" valida o token aqui dentro.
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+// Quem chama é o servidor do app (sem Origin). Navegadores só de páginas do próprio app.
+const ORIGENS = ["https://cep-planejamento-v2.vercel.app", "https://cep-planejamento-2027.vercel.app"];
+const corsDe = (origem: string | null) => ({
+  ...(origem && ORIGENS.includes(origem) ? { "Access-Control-Allow-Origin": origem, Vary: "Origin" } : {}),
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, x-cep-visitante",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-const resp = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
+});
 
 // Tabelas do escritório que liberam acesso por e-mail. Como este cadastro não confirma a posse do e-mail,
 // esses endereços nunca podem ser cadastrados por aqui.
 const TABELAS_EQUIPE = ["crm_equipe", "painel_equipe", "kyron_admins"];
 
 Deno.serve(async (req: Request) => {
+  const cors = corsDe(req.headers.get("Origin"));
+  const resp = (status: number, body: unknown) =>
+    new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return resp(405, { erro: "Método não permitido." });
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
@@ -31,10 +34,17 @@ Deno.serve(async (req: Request) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return resp(400, { erro: "Informe um e-mail válido." });
     if (senha.length < 8) return resp(400, { erro: "A senha precisa de pelo menos 8 caracteres." });
     if (senha.length > 72) return resp(400, { erro: "A senha pode ter no máximo 72 caracteres." });
+    // Limite de tentativas: o app chama daqui do servidor dele (um IP só para a turma toda) e informa o IP
+    // de quem está se cadastrando. Conta 30 por visitante e, no total, 300 por quem chama — quem forjar o
+    // cabeçalho continua preso ao total do próprio IP.
     const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "desconhecido";
-    const { data: liberado, error: eLim } = await admin.rpc("cep_registrar_tentativa", { p_ip: ip });
-    if (eLim) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });
-    if (!liberado) return resp(429, { erro: "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." });
+    const visitante = (req.headers.get("x-cep-visitante") ?? "").trim().slice(0, 64);
+    const limites = visitante ? [[`servidor:${ip}`, 300], [`${ip}|${visitante}`, 30]] as const : [[ip, 30]] as const;
+    for (const [chave, limite] of limites) {
+      const { data: liberado, error: eLim } = await admin.rpc("cep_registrar_tentativa", { p_ip: chave, p_limite: limite });
+      if (eLim) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });
+      if (!liberado) return resp(429, { erro: "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." });
+    }
     for (const t of TABELAS_EQUIPE) {
       const { data, error } = await admin.from(t).select("email").ilike("email", email.replace(/[\\%_]/g, "\\$&")).limit(1);
       if (error) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });

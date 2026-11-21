@@ -22,7 +22,9 @@ export async function middleware(req: NextRequest) {
   // Server Actions verificam a sessão sozinhas e respondem {erro:"sessao"}; redirecionar aqui faria o
   // navegador receber uma página no lugar da resposta e a aluna veria "verifique a conexão".
   const acao = req.method === "POST" && req.headers.has("next-action");
-  if (!user && !publica && !acao) {
+  // Download da planilha: responde 401 com texto (redirecionar faria o navegador salvar a página de login).
+  const arquivo = caminho.startsWith("/exportar/");
+  if (!user && !publica && !acao && !arquivo) {
     const url = req.nextUrl.clone();
     url.pathname = "/entrar";
     url.search = caminho === "/" ? "" : `?volta=${encodeURIComponent(caminho + req.nextUrl.search)}`;
