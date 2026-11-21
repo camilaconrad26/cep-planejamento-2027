@@ -23,7 +23,7 @@ export type OkrP = { id: string; objectiveId: string; titulo: string; trimestre:
 export type KrP = { id: string; okrId: string; descricao: string; alvo: number | null };
 export type KpiP = { id: string; objectiveId: string | null; nome: string };
 export type NoObjetivo = ObjetivoP & {
-  taticas: TarefaP[]; operacionais: TarefaP[]; semTrimestre: TarefaP[]; okrs: (OkrP & { krs: KrP[] })[]; kpis: KpiP[]; totalAcoes: number;
+  taticas: TarefaP[]; operacionais: TarefaP[]; semTrimestre: TarefaP[]; okrs: (OkrP & { krs: KrP[] })[]; kpis: KpiP[]; totalAcoes: number; totalKrs: number;
 };
 export type GrupoCategoria = { categoria: Categoria; prioritaria: boolean; objetivos: NoObjetivo[] };
 
@@ -47,6 +47,7 @@ export function montarArvore(
         .map((k) => ({ ...k, krs: d.krs.filter((r) => r.okrId === k.id) })),
       kpis: d.kpis.filter((k) => k.objectiveId === o.id),
       totalAcoes: todas.length,
+      totalKrs: d.krs.filter((r) => d.okrs.some((k) => k.id === r.okrId && k.objectiveId === o.id)).length,
     }];
   });
   const ordenadas = [...d.categorias].sort((a, b) => a.ordem - b.ordem);
@@ -55,4 +56,14 @@ export function montarArvore(
     ...ordenadas.filter((c) => d.prioridades.includes(c.id)).map(grupo),
     ...ordenadas.filter((c) => !d.prioridades.includes(c.id)).map(grupo).filter((g) => g.objetivos.length > 0),
   ];
+}
+
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+/** Pergunta antes de excluir um objetivo: diz tudo o que vai junto (ações, resultados-chave e indicadores). */
+export function perguntaExclusao(acoes: number, krs: number, kpis: number): string {
+  if (!acoes && !krs && !kpis) return "Excluir este objetivo?";
+  if (!krs && !kpis) return acoes === 1 ? "Excluir este objetivo e a 1 ação ligada a ele?" : `Excluir este objetivo e as ${acoes} ações ligadas a ele?`;
+  const partes = [acoes ? plural(acoes, "ação", "ações") : "", krs ? plural(krs, "resultado-chave", "resultados-chave") : "", kpis ? plural(kpis, "indicador", "indicadores") : ""].filter(Boolean);
+  const lista = partes.length > 1 ? `${partes.slice(0, -1).join(", ")} e ${partes[partes.length - 1]}` : partes[0];
+  return `Excluir este objetivo e o que está ligado a ele: ${lista}?`;
 }

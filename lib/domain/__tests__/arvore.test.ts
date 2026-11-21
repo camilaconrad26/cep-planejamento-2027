@@ -44,3 +44,18 @@ describe("montarArvore", () => {
     expect(g3[0].objetivos[0].okrs[0].krs.map((k) => k.id)).toEqual(["kr"]);
   });
 });
+
+describe("exclusão de objetivo", () => {
+  test("conta resultados-chave de todos os OKRs, mesmo fora do período", () => {
+    const g = montarArvore({ ...dados, okrs: [{ id: "K", objectiveId: "O2", titulo: "okr", trimestre: 3 }], krs: [{ id: "kr", okrId: "K", descricao: "KR: x", alvo: null }], kpis: [] }, "t1");
+    expect(g[0].objetivos[0].totalKrs).toBe(1);
+  });
+  test("textos da pergunta", async () => {
+    const { perguntaExclusao } = await import("@/lib/domain/arvore");
+    expect(perguntaExclusao(0, 0, 0)).toBe("Excluir este objetivo?");
+    expect(perguntaExclusao(2, 0, 0)).toBe("Excluir este objetivo e as 2 ações ligadas a ele?");
+    expect(perguntaExclusao(1, 0, 0)).toBe("Excluir este objetivo e a 1 ação ligada a ele?");
+    expect(perguntaExclusao(2, 1, 1)).toBe("Excluir este objetivo e o que está ligado a ele: 2 ações, 1 resultado-chave e 1 indicador?");
+    expect(perguntaExclusao(0, 2, 0)).toBe("Excluir este objetivo e o que está ligado a ele: 2 resultados-chave?");
+  });
+});

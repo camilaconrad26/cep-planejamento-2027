@@ -61,6 +61,9 @@ export async function editarObjetivo(id: string, d: { titulo: string; trimestre:
 
 export async function excluirObjetivo(id: string): Promise<Retorno> {
   const c = await sessao(); if (!c) return { erro: "sessao" };
+  // KPIs ficariam sem objetivo e invisíveis (o banco só desliga a ligação); saem junto, como ações e OKRs.
+  const k = await c.sb.from("cep_kpis").delete().eq("objective_id", id).eq("org_id", c.s.orgId);
+  if (k.error) return { erro: "Não foi possível excluir. Tente de novo." };
   const { data, error } = await c.sb.from("cep_objectives").delete().eq("id", id).eq("org_id", c.s.orgId).select("id");
   if (error || !data?.length) return { erro: "Não foi possível excluir. Tente de novo." };
   revalidar();

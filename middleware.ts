@@ -19,7 +19,10 @@ export async function middleware(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const caminho = req.nextUrl.pathname;
   const publica = PUBLICAS.some((p) => caminho === p || caminho.startsWith(p + "/"));
-  if (!user && !publica) {
+  // Server Actions verificam a sessão sozinhas e respondem {erro:"sessao"}; redirecionar aqui faria o
+  // navegador receber uma página no lugar da resposta e a aluna veria "verifique a conexão".
+  const acao = req.method === "POST" && req.headers.has("next-action");
+  if (!user && !publica && !acao) {
     const url = req.nextUrl.clone();
     url.pathname = "/entrar";
     url.search = caminho === "/" ? "" : `?volta=${encodeURIComponent(caminho + req.nextUrl.search)}`;

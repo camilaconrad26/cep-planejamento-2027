@@ -92,6 +92,24 @@ test.describe("planejamento", () => {
     await expect(grupo.getByText(texto, { exact: true })).toBeVisible();
   });
 
+  test("excluir-objetivo-avisa-kr-e-kpi-e-libera-readicao", async ({ page }) => {
+    await criarConta(page);
+    for (const nivel of ["okr", "kpi"]) {
+      await page.goto(`/biblioteca?perfil=1&categoria=comercial&nivel=${nivel}`);
+      const item = page.getByRole("listitem").filter({ hasText: nivel.toUpperCase() });
+      await item.getByRole("button", { name: "Adicionar ao meu plano" }).click();
+      await expect(item.getByText("No seu plano")).toBeVisible();
+    }
+    await page.goto("/planejamento?visao=ano");
+    const obj = page.getByRole("region", { name: "Comercial" }).getByRole("article");
+    await obj.getByRole("button", { name: "Excluir objetivo" }).click();
+    await expect(obj.getByRole("alertdialog")).toContainText("1 resultado-chave e 1 indicador");
+    await obj.getByRole("button", { name: "Excluir de vez" }).click();
+    await expect(page.getByRole("region", { name: "Comercial" })).toHaveCount(0);
+    await page.goto("/biblioteca?perfil=1&categoria=comercial&nivel=kpi");
+    await expect(page.getByRole("listitem").filter({ hasText: "KPI" }).getByRole("button", { name: "Adicionar ao meu plano" })).toBeVisible();
+  });
+
   test("celular-390", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await criarConta(page);

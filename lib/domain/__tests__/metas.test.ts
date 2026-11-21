@@ -50,3 +50,16 @@ test("formatar percentual", () => {
   expect(formatarPct(-0.125)).toBe("−12,5%");
   expect(formatarPct(null)).toBe("—");
 });
+
+test("linhas alteradas: só o que mudou vai para o banco", async () => {
+  const { linhasAlteradas } = await import("@/lib/domain/metas");
+  const a = metasVazias();
+  const b = structuredClone(a);
+  expect(linhasAlteradas(a, b)).toEqual({ anual: [], trimestres: [], produtos: [], realizado: [], porque: false });
+  b.realizado[2] = 150000;
+  b.anual.super.lucratividade = 30;
+  b.trimestres[3].mega = 10;
+  b.produtos.principal.nome = "Diagnóstico";
+  b.porque = "sede";
+  expect(linhasAlteradas(a, b)).toEqual({ anual: ["super"], trimestres: [[3, "mega"]], produtos: ["principal"], realizado: [2], porque: true });
+});

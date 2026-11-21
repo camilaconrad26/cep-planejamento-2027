@@ -17,6 +17,7 @@ export function AcoesVenda({ inicial, metaTrimestre }: { inicial: AcaoVenda[]; m
   const [erro, setErro] = useState("");
   const ultimo = useRef(acoes); ultimo.current = acoes;
   const trava = useRef(false);
+  const novas = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const mudar = (id: string, patch: Partial<AcaoVenda>) => setAcoes((l) => l.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   async function gravar(id: string, patch: Partial<AcaoVenda> = {}) {
@@ -27,8 +28,13 @@ export function AcoesVenda({ inicial, metaTrimestre }: { inicial: AcaoVenda[]; m
       const r = await salvarAcaoVenda(a);
       if (r.erro === "sessao") { marcarSalvo("sessao"); return; }
       if (r.erro) throw new Error(r.erro);
-      marcarSalvo("salvo");
-    } catch { marcarSalvo("erro"); setErro("Não foi possível salvar a ação de vendas. Saia do campo de novo para tentar."); }
+      clearTimeout(novas.current[id]);
+      marcarSalvo("salvo"); setErro("");
+    } catch {
+      marcarSalvo("erro"); setErro("Não foi possível salvar a ação de vendas. Tentando de novo…");
+      clearTimeout(novas.current[id]);
+      novas.current[id] = setTimeout(() => gravar(id), 5000); // tenta de novo com a versão mais recente da linha
+    }
   }
   async function adicionar(mes: number) {
     if (trava.current) return; trava.current = true; setErro("");

@@ -5,7 +5,7 @@ import { Erro, useAcao } from "@/components/planejamento/useAcao";
 import { NovaAcao } from "@/components/planejamento/NovaAcao";
 import { SeletorTrimestre, nomeTri } from "@/components/planejamento/campos";
 import { editarAcao, editarObjetivo, excluirAcao, excluirObjetivo } from "@/lib/data/planejamentoAcoes";
-import type { NoObjetivo, TarefaP } from "@/lib/domain/arvore";
+import { perguntaExclusao, type NoObjetivo, type TarefaP } from "@/lib/domain/arvore";
 
 const STATUS: Record<TarefaP["status"], string> = { nao_iniciado: "Não iniciada", em_andamento: "Em andamento", concluido: "Concluída" };
 
@@ -61,8 +61,7 @@ export function ObjetivoCartao({ o, trimestrePadrao }: { o: NoObjetivo; trimestr
   const id = useId();
   const cancelar = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (excluir) cancelar.current?.focus(); }, [excluir]);
-  const pergunta = o.totalAcoes === 0 ? "Excluir este objetivo?"
-    : `Excluir este objetivo e ${o.totalAcoes === 1 ? "a 1 ação ligada" : `as ${o.totalAcoes} ações ligadas`} a ele?`;
+  const pergunta = perguntaExclusao(o.totalAcoes, o.totalKrs, o.kpis.length);
 
   return (
     <article aria-labelledby={`${id}-h`} className="flex flex-col gap-3 rounded-cartao border border-linha bg-papel px-4 py-4 sm:px-5">

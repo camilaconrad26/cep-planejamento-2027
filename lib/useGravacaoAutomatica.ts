@@ -30,7 +30,12 @@ export function useGravacaoAutomatica<T>(valor: T, gravar: (v: T) => Promise<{ e
     timer.current = setTimeout(salvar, 900);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valor]);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  // Ao sair da página pelo menu (navegação sem recarregar), grava o que estiver pendente em vez de descartar.
+  useEffect(() => () => {
+    clearTimeout(timer.current);
+    if (pendente.current) void gravar(ultimo.current).then((r) => marcarSalvo(r.erro === "sessao" ? "sessao" : r.erro ? "erro" : "salvo"), () => marcarSalvo("erro"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     const aviso = (e: BeforeUnloadEvent) => { if (pendente.current) e.preventDefault(); };
     window.addEventListener("beforeunload", aviso);

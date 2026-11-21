@@ -73,6 +73,16 @@ test.describe("metas", () => {
     await expect(page.getByTestId("cresc-meta")).toHaveText("+20%");
   });
 
+  test("sessao-expirada-avisa", async ({ page, context }) => {
+    await criarConta(page);
+    await page.goto("/metas");
+    await context.clearCookies();
+    await page.getByLabel("Faturamento · Meta").fill("1.000.000");
+    await page.getByLabel("Faturamento · Super meta").click();
+    await expect(page.locator("#salvo")).toContainText("Sua sessão expirou");
+    expect(await page.getByLabel("Faturamento · Meta").inputValue()).toContain("1.000.000");
+  });
+
   test("celular-390", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await criarConta(page);

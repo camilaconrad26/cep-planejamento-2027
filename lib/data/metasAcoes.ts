@@ -1,8 +1,7 @@
 "use server";
-import { revalidatePath } from "next/cache";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
 import { obterSessao } from "@/lib/data/sessao";
-import { ALTURAS, PRODUTOS, type AcaoVenda, type MetasForm } from "@/lib/domain/metas";
+import { type AcaoVenda, type Alteradas, type MetasForm } from "@/lib/domain/metas";
 
 const FALHA = "Não foi possível salvar. Tente de novo.";
 const pos = (x: unknown) => { const n = Number(x); return Number.isFinite(n) && n > 0 ? n : 0; };
@@ -17,30 +16,33 @@ async function contexto() {
   return { s, sb, ciclo: ciclo as string };
 }
 
-/** Grava a página de metas inteira (upserts idempotentes; a gravação automática pode repetir sem duplicar). */
-export async function salvarMetas(f: MetasForm): Promise<{ ok?: true; erro?: string }> {
+/** Grava só as linhas que mudaram (uma aba antiga não desfaz o que foi editado em outro aparelho). */
+export async function salvarMetas(f: MetasForm, alt: Alteradas): Promise<{ ok?: true; erro?: string }> {
   const c = await contexto();
   if (!c) return { erro: "sessao" };
   if (!c.ciclo) return { erro: FALHA };
   const base = { org_id: c.s.orgId, cycle_id: c.ciclo };
-  const metas = ALTURAS.flatMap(({ valor: a }) => [
-    { ...base, trimestre: null, altura: a, faturamento: pos(f.anual?.[a]?.faturamento), lucratividade: Math.min(pos(f.anual?.[a]?.lucratividade), 100),
-      anuncios: Math.min(pos(f.anual?.[a]?.anuncios), 100), time: Math.min(Math.round(pos(f.anual?.[a]?.time)), 32000) },
-    ...([1, 2, 3, 4] as const).map((t) => ({ ...base, trimestre: t, altura: a, faturamento: pos(f.trimestres?.[t]?.[a]), lucratividade: null, anuncios: null, time: null })),
-  ]);
-  const produtos = PRODUTOS.map(({ tipo }) => ({
+  const ALT = ["meta", "super", "mega"], TIPOS = ["entrada", "principal", "alto_valor"], TS = [1, 2, 3, 4];
+  const metas = [
+    ...(alt.anual ?? []).filter((a) => ALT.includes(a)).map((a) => ({
+      ...base, trimestre: null, altura: a, faturamento: pos(f.anual?.[a]?.faturamento), lucratividade: Math.min(pos(f.anual?.[a]?.lucratividade), 100),
+      anuncios: Math.min(pos(f.anual?.[a]?.anuncios), 100), time: Math.min(Math.round(pos(f.anual?.[a]?.time)), 32000) })),
+    ...(alt.trimestres ?? []).filter(([t, a]) => TS.includes(t) && ALT.includes(a)).map(([t, a]) => ({
+      ...base, trimestre: t, altura: a, faturamento: pos(f.trimestres?.[t]?.[a]), lucratividade: null, anuncios: null, time: null })),
+  ];
+  const produtos = (alt.produtos ?? []).filter((t) => TIPOS.includes(t)).map((tipo) => ({
     ...base, tipo, nome: txt(f.produtos?.[tipo]?.nome, 200), ticket: pos(f.produtos?.[tipo]?.ticket),
     vendas_meta: pos(f.produtos?.[tipo]?.vendas?.meta), vendas_super: pos(f.produtos?.[tipo]?.vendas?.super), vendas_mega: pos(f.produtos?.[tipo]?.vendas?.mega),
   }));
-  const reais = ([1, 2, 3, 4] as const).map((t) => ({ ...base, trimestre: t, faturamento_realizado: pos(f.realizado?.[t]) }));
-  const [a, b, d, e] = await Promise.all([
-    c.sb.from("cep_financial_goals").upsert(metas, { onConflict: "cycle_id,trimestre,altura" }),
-    c.sb.from("cep_products").upsert(produtos, { onConflict: "cycle_id,tipo" }),
-    c.sb.from("cep_quarter_results").upsert(reais, { onConflict: "cycle_id,trimestre" }),
-    c.sb.from("cep_cycles").update({ meta_porque: txt(f.porque, 2000) }).eq("id", c.ciclo),
-  ]);
-  if (a.error || b.error || d.error || e.error) return { erro: FALHA };
-  revalidatePath("/metas");
+  const reais = (alt.realizado ?? []).filter((t) => TS.includes(t)).map((t) => ({ ...base, trimestre: t, faturamento_realizado: pos(f.realizado?.[t]) }));
+  const ops = [
+    metas.length ? c.sb.from("cep_financial_goals").upsert(metas, { onConflict: "cycle_id,trimestre,altura" }) : null,
+    produtos.length ? c.sb.from("cep_products").upsert(produtos, { onConflict: "cycle_id,tipo" }) : null,
+    reais.length ? c.sb.from("cep_quarter_results").upsert(reais, { onConflict: "cycle_id,trimestre" }) : null,
+    alt.porque ? c.sb.from("cep_cycles").update({ meta_porque: txt(f.porque, 2000) }).eq("id", c.ciclo) : null,
+  ].filter((x) => x !== null);
+  const rs = await Promise.all(ops);
+  if (rs.some((r) => r.error)) return { erro: FALHA };
   return { ok: true };
 }
 

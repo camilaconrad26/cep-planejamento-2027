@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Cartao } from "@/components/ui/Cartao";
 import { Botao } from "@/components/ui/Botao";
 import { CampoMoeda } from "@/components/ui/CampoMoeda";
@@ -11,7 +11,7 @@ import { salvarMetas } from "@/lib/data/metasAcoes";
 import { useGravacaoAutomatica } from "@/lib/useGravacaoAutomatica";
 import { formatarMoeda } from "@/lib/domain/moeda";
 import {
-  ALTURAS, PRODUTOS, anunciosEmReais, cenarioProdutos, crescimento, dividirEmQuatro, formatarPct, formatarPctSimples, lucroProjetado,
+  ALTURAS, PRODUTOS, linhasAlteradas, nadaAlterado, anunciosEmReais, cenarioProdutos, crescimento, dividirEmQuatro, formatarPct, formatarPctSimples, lucroProjetado,
   mediaMensal, pctRealizado, somaTrimestres, type AcaoVenda, type Altura, type LinhaAnual, type MetasForm,
 } from "@/lib/domain/metas";
 
@@ -39,7 +39,14 @@ const LINHAS: { chave: keyof LinhaAnual; rotulo: string; moeda?: boolean; inteir
 
 export function MetasFinanceiras({ inicial, base2026, acoes = [] }: { inicial: MetasForm; base2026: number; acoes?: AcaoVenda[] }) {
   const [m, setM] = useState(inicial);
-  useGravacaoAutomatica(m, salvarMetas);
+  const gravado = useRef(inicial); // última versão que o banco confirmou
+  useGravacaoAutomatica(m, async (v) => {
+    const alt = linhasAlteradas(gravado.current, v);
+    if (nadaAlterado(alt)) return {};
+    const r = await salvarMetas(v, alt);
+    if (!r.erro) gravado.current = v;
+    return r;
+  });
   const anual = (a: Altura, chave: keyof LinhaAnual, v: number) => setM((x) => ({ ...x, anual: { ...x.anual, [a]: { ...x.anual[a], [chave]: v } } }));
   const fat = (a: Altura) => m.anual[a].faturamento;
 

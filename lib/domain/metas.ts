@@ -30,6 +30,21 @@ export function metasVazias(): MetasForm {
   };
 }
 
+export type Alteradas = { anual: Altura[]; trimestres: [Tri, Altura][]; produtos: TipoProduto[]; realizado: Tri[]; porque: boolean };
+const igual = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+/** Linhas do banco que mudaram entre duas versões do formulário (para não regravar a página inteira). */
+export function linhasAlteradas(antes: MetasForm, depois: MetasForm): Alteradas {
+  const as = ["meta", "super", "mega"] as Altura[], ts = [1, 2, 3, 4] as Tri[];
+  return {
+    anual: as.filter((a) => !igual(antes.anual[a], depois.anual[a])),
+    trimestres: ts.flatMap((t) => as.filter((a) => antes.trimestres[t][a] !== depois.trimestres[t][a]).map((a) => [t, a] as [Tri, Altura])),
+    produtos: (["entrada", "principal", "alto_valor"] as TipoProduto[]).filter((p) => !igual(antes.produtos[p], depois.produtos[p])),
+    realizado: ts.filter((t) => antes.realizado[t] !== depois.realizado[t]),
+    porque: antes.porque !== depois.porque,
+  };
+}
+export const nadaAlterado = (a: Alteradas) => !a.anual.length && !a.trimestres.length && !a.produtos.length && !a.realizado.length && !a.porque;
+
 const n = (x: number) => (Number.isFinite(x) ? x : 0);
 export const lucroProjetado = (fat: number, pct: number) => n(fat) * n(pct) / 100;
 export const anunciosEmReais = (fat: number, pct: number) => n(fat) * n(pct) / 100;
