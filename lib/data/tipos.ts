@@ -819,6 +819,7 @@ export type Database = {
           nome: string
           perfil: number | null
           texto_maior: boolean
+          importado_v1_em: string | null
           updated_at: string
           user_id: string
         }
@@ -828,6 +829,7 @@ export type Database = {
           nome: string
           perfil?: number | null
           texto_maior?: boolean
+          importado_v1_em?: string | null
           updated_at?: string
           user_id: string
         }
@@ -837,6 +839,7 @@ export type Database = {
           nome?: string
           perfil?: number | null
           texto_maior?: boolean
+          importado_v1_em?: string | null
           updated_at?: string
           user_id?: string
         }
