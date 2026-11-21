@@ -78,7 +78,8 @@ test("alvos-de-toque", async ({ page }) => {
 });
 
 test.describe("iphone", () => {
-  const { defaultBrowserType: _, ...iphone } = devices["iPhone 13"];
+  const iphone: Record<string, unknown> = { ...devices["iPhone 13"] };
+  delete iphone.defaultBrowserType; // forçaria outro worker; o Chromium emula o iPhone
   test.use(iphone);
   test("navega-pelo-menu", async ({ page }) => {
     await criarConta(page, "Aluna iPhone");
