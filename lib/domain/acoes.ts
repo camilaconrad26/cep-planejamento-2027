@@ -108,3 +108,23 @@ export function gradeMes(ano: number, mes: number): string[][] {
 }
 export const acoesNoDia = (lista: Acao[], dia: string) => lista.filter((x) => x.prazo === dia);
 export const formatarData = (s: string | null) => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : "—");
+
+/** Endereço do plano de ação com os filtros atuais e as mudanças pedidas (só parâmetros fora do padrão). */
+export function urlAcoes(f: FiltrosAcoes, mudar: Partial<FiltrosAcoes> = {}): string {
+  const g = { ...f, ...mudar };
+  const p = new URLSearchParams();
+  if (g.visao !== "tabela") p.set("visao", g.visao);
+  if (g.q) p.set("q", g.q);
+  if (g.categoria) p.set("categoria", g.categoria);
+  if (g.nivel) p.set("nivel", g.nivel);
+  if (g.trimestre) p.set("trimestre", String(g.trimestre));
+  if (g.status) p.set("status", g.status);
+  if (g.atrasadas) p.set("atrasadas", "1");
+  if (g.concluidas) p.set("concluidas", "1");
+  if (g.ordem !== "prazo") p.set("ordem", g.ordem);
+  if (g.sentido !== "asc") p.set("sentido", g.sentido);
+  if (g.cal !== "mes") p.set("cal", g.cal);
+  if (g.data) p.set("data", g.data);
+  const s = p.toString();
+  return `/plano-de-acao${s ? `?${s}` : ""}`;
+}

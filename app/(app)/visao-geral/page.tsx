@@ -15,7 +15,6 @@ export const metadata: Metadata = { title: "Visão geral" };
 export const dynamic = "force-dynamic";
 
 const EM_BREVE = [
-  ["Plano de ação", "tabela, quadro Kanban, calendário e lista de prioridades"],
   ["OKRs e indicadores", "resultados-chave e KPIs com medições e gráficos, dentro de Metas e indicadores"],
   ["Revisão estratégica e Histórico", "revisão de cada trimestre, relatórios e comparação entre ciclos"],
 ];

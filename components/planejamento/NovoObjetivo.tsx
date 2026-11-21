@@ -24,7 +24,7 @@ export function NovoObjetivo({ categoryId, categorias, trimestrePadrao }: { cate
     <form onSubmit={enviar} className="flex flex-col gap-3 rounded-cartao border border-ouro-fio bg-papel-2 p-4">
       {!categoryId && (
         <label className="flex flex-col gap-1.5 text-[0.9rem] font-bold text-tinta">Categoria
-          <select value={cat} onChange={(e) => setCat(e.target.value)} className="campo font-normal">
+          <select aria-label="Categoria do objetivo" value={cat} onChange={(e) => setCat(e.target.value)} className="campo font-normal">
             {categorias?.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></label>
       )}
