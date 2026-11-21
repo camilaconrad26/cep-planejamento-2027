@@ -5,6 +5,7 @@ import { FiltrosAcoes } from "@/components/acoes/FiltrosAcoes";
 import { Tabela } from "@/components/acoes/Tabela";
 import { ListaPrioridades } from "@/components/acoes/ListaPrioridades";
 import { Kanban } from "@/components/acoes/Kanban";
+import { Calendario } from "@/components/acoes/Calendario";
 import { exigirSessao } from "@/lib/data/sessao";
 import { obterAcoes } from "@/lib/data/acoes";
 import { VISOES_ACOES, filtrarAcoes, lerFiltrosAcoes, ordenarAcoes, urlAcoes, type Ordem } from "@/lib/domain/acoes";
@@ -42,9 +43,10 @@ export default async function PlanoDeAcao({ searchParams }: { searchParams: Prom
           <>
             <FiltrosAcoes f={f} categorias={d.categorias} />
             <p className="text-sec" role="status">{visiveis.length === 1 ? "1 ação" : `${visiveis.length} ações`}</p>
-            {visiveis.length === 0 && f.visao !== "kanban" && <p className="text-sec">Nenhuma ação com esses filtros.</p>}
+            {visiveis.length === 0 && f.visao !== "kanban" && f.visao !== "calendario" && <p className="text-sec">Nenhuma ação com esses filtros.</p>}
             {f.visao === "kanban" && <Kanban acoes={visiveis} hoje={hoje} />}
-            {f.visao !== "kanban" && visiveis.length > 0 && (f.visao === "prioridades"
+            {f.visao === "calendario" && <Calendario acoes={visiveis} f={f} hoje={hoje} />}
+            {f.visao !== "kanban" && f.visao !== "calendario" && visiveis.length > 0 && (f.visao === "prioridades"
               ? <ListaPrioridades acoes={visiveis} hoje={hoje} />
               : <Tabela acoes={visiveis} hoje={hoje} ordem={f.ordem} sentido={f.sentido} hrefOrdem={hrefOrdem} />)}
           </>

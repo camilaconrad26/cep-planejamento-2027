@@ -123,6 +123,40 @@ test.describe("plano de ação", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
   });
 
+  test("calendario", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await criarConta(page);
+    await criarAcoes(page);
+    await page.goto("/plano-de-acao");
+    await linhas(page).filter({ hasText: "Gravar vídeo" }).getByRole("button", { name: "Editar: Gravar vídeo" }).click();
+    await page.getByRole("form", { name: "Editar ação: Gravar vídeo" }).getByLabel("Prazo").fill("2027-02-10");
+    await page.getByRole("button", { name: "Salvar ação" }).click();
+    await expect(linhas(page).filter({ hasText: "Gravar vídeo" })).toContainText("10/02/2027");
+
+    await page.goto("/plano-de-acao?visao=calendario&data=2027-02-01");
+    await expect(page.getByRole("heading", { name: "Fevereiro de 2027" })).toBeVisible();
+    await expect(page.getByRole("gridcell", { name: /10 de fevereiro/ })).toContainText("Gravar vídeo");
+    await expect(page.getByRole("region", { name: /Sem prazo/ })).toContainText("Reunião com contador");
+    await page.getByRole("link", { name: "Próximo" }).click();
+    await expect(page.getByRole("heading", { name: "Março de 2027" })).toBeVisible();
+
+    await page.goto("/plano-de-acao?visao=calendario&cal=semana&data=2027-02-10");
+    await expect(page.getByRole("heading", { name: "Semana de 07/02 a 13/02/2027" })).toBeVisible();
+    await expect(page.getByRole("region", { name: /Quarta, 10\/02/ })).toContainText("Gravar vídeo");
+    await page.goto("/plano-de-acao?visao=calendario&cal=dia&data=2027-02-10");
+    await expect(page.getByRole("heading", { name: "Quarta, 10/02/2027" })).toBeVisible();
+    await expect(page.getByText("Gravar vídeo")).toBeVisible();
+  });
+
+  test("calendario-celular", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await criarConta(page);
+    await criarAcoes(page);
+    await page.goto("/plano-de-acao?visao=calendario&data=2027-01-01");
+    await expect(page.getByRole("heading", { name: "Janeiro de 2027" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  });
+
   test("sem-acoes", async ({ page }) => {
     await criarConta(page);
     await page.goto("/plano-de-acao");
