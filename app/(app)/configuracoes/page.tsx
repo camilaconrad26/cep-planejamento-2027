@@ -17,6 +17,13 @@ export default async function Configuracoes() {
         <Cartao titulo="Seus dados"><FormNome nome={s.nome} /></Cartao>
         <Cartao titulo="Perfil"><p className="text-sec">O perfil define as sugestões da biblioteca de estratégias. Você pode trocar quando quiser.</p><FormPerfil perfil={s.perfil} /></Cartao>
         <Cartao titulo="Senha"><FormSenha /></Cartao>
+        <Cartao titulo="Exportar">
+          <p className="text-sec">Leve o seu planejamento para fora do sistema quando quiser.</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/imprimir" className="rounded-full border-[1.5px] border-ouro-fio px-5 py-2.5 font-bold text-ouro-texto hover:bg-papel-2 hover:text-tinta">Versão para imprimir ou salvar em PDF</Link>
+            <a href="/exportar/acoes" download className="rounded-full border-[1.5px] border-ouro-fio px-5 py-2.5 font-bold text-ouro-texto hover:bg-papel-2 hover:text-tinta">Baixar ações em planilha (CSV)</a>
+          </div>
+        </Cartao>
         {s.papeis.includes("admin") && (
           <Cartao titulo="Biblioteca">
             <p className="text-sec">Corrija textos, desative ou crie itens e ajuste a descrição das categorias.</p>

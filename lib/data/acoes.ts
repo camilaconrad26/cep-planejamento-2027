@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { obterCicloId } from "@/lib/data/ciclo";
 import type { Acao, Prioridade } from "@/lib/domain/acoes";
 import type { Categoria } from "@/lib/domain/biblioteca";
 import type { Status } from "@/lib/domain/ciclo";
@@ -9,8 +10,7 @@ const um = <T,>(x: T | T[] | null): T | null => (Array.isArray(x) ? x[0] ?? null
 /** Ações (tarefas não arquivadas) do ciclo ativo, com objetivo e categoria. */
 export async function obterAcoes(orgId: string): Promise<{ acoes: Acao[]; categorias: Categoria[] }> {
   const sb = await criarClienteServidor();
-  const { data: cicloId, error } = await sb.rpc("cep_garantir_ciclo", { p_org: orgId, p_ano: 2027 });
-  if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
+  const cicloId = await obterCicloId(sb, orgId);
   const [t, c] = await Promise.all([
     sb.from("cep_tasks").select("id, titulo, nivel, responsavel, prioridade, status, data_inicio, prazo, trimestre, cep_objectives(titulo, cep_categories(slug, nome))")
       .eq("cycle_id", cicloId).eq("arquivado", false).order("created_at"),

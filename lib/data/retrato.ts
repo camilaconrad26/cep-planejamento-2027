@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { obterCicloId } from "@/lib/data/ciclo";
 import { buscarTodas } from "@/lib/data/paginar";
 import { calcularRetrato, type TarefaResumo } from "@/lib/domain/retrato";
 import { contarMedicoesVencidas, mediaKRs, situacaoKPI, type KPI, type KR } from "@/lib/domain/resultados";
@@ -7,8 +8,7 @@ import { contarMedicoesVencidas, mediaKRs, situacaoKPI, type KPI, type KR } from
 /** Busca o que a Visão geral precisa e calcula o retrato. RLS garante que só vem a organização da aluna. */
 export async function montarRetrato(orgId: string, hoje: string) {
   const sb = await criarClienteServidor();
-  const { data: cicloId, error } = await sb.rpc("cep_garantir_ciclo", { p_org: orgId, p_ano: 2027 });
-  if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
+  const cicloId = await obterCicloId(sb, orgId);
   const [ciclo, diag, prios, tarefas, revisoes, okrs, kpis] = await Promise.all([
     sb.from("cep_cycles").select("id, ano").eq("id", cicloId).single(),
     sb.from("cep_diagnostics").select("id, concluido_em").eq("org_id", orgId).order("created_at", { ascending: false }).limit(1),

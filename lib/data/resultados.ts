@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { obterCicloId } from "@/lib/data/ciclo";
 import type { KPI, KR, Medicao } from "@/lib/domain/resultados";
 import { buscarTodas } from "@/lib/data/paginar";
 
@@ -10,8 +11,7 @@ export type ObjetivoR = { id: string; titulo: string; categoria: string; ordem: 
 /** OKRs, KRs, KPIs e medições do ciclo ativo, mais a execução (tarefas) de cada objetivo — mostrada à parte. */
 export async function obterResultados(orgId: string) {
   const sb = await criarClienteServidor();
-  const { data: cicloId, error } = await sb.rpc("cep_garantir_ciclo", { p_org: orgId, p_ano: 2027 });
-  if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
+  const cicloId = await obterCicloId(sb, orgId);
   const [objs, okrs, kpis, tarefas] = await Promise.all([
     sb.from("cep_objectives").select("id, titulo, cep_categories(nome, ordem)").eq("cycle_id", cicloId).order("created_at"),
     sb.from("cep_okrs").select("id, objective_id, titulo, trimestre").eq("cycle_id", cicloId).order("created_at"),

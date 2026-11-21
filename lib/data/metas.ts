@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { obterCicloId } from "@/lib/data/ciclo";
 import { lerFechamento } from "@/lib/domain/fechamento";
 import { metasVazias, type AcaoVenda, type Altura, type MetasForm, type TipoProduto } from "@/lib/domain/metas";
 
@@ -8,8 +9,7 @@ const num = (x: unknown) => (typeof x === "number" && Number.isFinite(x) ? x : N
 /** Metas financeiras do ciclo ativo, ações de vendas e o faturamento de 2026 informado no fechamento. */
 export async function obterMetas(orgId: string): Promise<{ cicloId: string; form: MetasForm; acoes: AcaoVenda[]; base2026: number }> {
   const sb = await criarClienteServidor();
-  const { data: cicloId, error } = await sb.rpc("cep_garantir_ciclo", { p_org: orgId, p_ano: 2027 });
-  if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
+  const cicloId = await obterCicloId(sb, orgId);
   const [ciclo, metas, prods, reais, vendas, diag] = await Promise.all([
     sb.from("cep_cycles").select("meta_porque").eq("id", cicloId).single(),
     sb.from("cep_financial_goals").select("trimestre, altura, faturamento, lucratividade, anuncios, time").eq("cycle_id", cicloId),

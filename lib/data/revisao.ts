@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { obterCicloId } from "@/lib/data/ciclo";
 import type { RespostasRevisao, RetratoRevisao } from "@/lib/domain/revisao";
 
 export type Revisao = { trimestre: number; respostas: RespostasRevisao; retrato: RetratoRevisao | null; concluidaEm: string | null };
@@ -7,8 +8,7 @@ export type Revisao = { trimestre: number; respostas: RespostasRevisao; retrato:
 /** Revisões do ciclo ativo e o faturamento realizado de cada trimestre. */
 export async function obterRevisoes(orgId: string) {
   const sb = await criarClienteServidor();
-  const { data: cicloId, error } = await sb.rpc("cep_garantir_ciclo", { p_org: orgId, p_ano: 2027 });
-  if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
+  const cicloId = await obterCicloId(sb, orgId);
   const [rev, reais] = await Promise.all([
     sb.from("cep_reviews").select("trimestre, respostas, retrato, concluida_em").eq("cycle_id", cicloId),
     sb.from("cep_quarter_results").select("trimestre, faturamento_realizado").eq("cycle_id", cicloId),

@@ -19,5 +19,5 @@ it("aluna não vê Alunas", () => {
 it("planejamento e biblioteca construídos, na ordem da especificação", async () => {
   const { ROTAS_CONSTRUIDAS } = await import("@/lib/domain/rotas");
   expect(ROTAS_CONSTRUIDAS.has("/biblioteca")).toBe(true);
-  expect(itensMenu([], ROTAS_CONSTRUIDAS).map((i) => i.rotulo)).toEqual(["Visão geral", "Meu diagnóstico", "Planejamento estratégico", "Biblioteca de estratégias", "Plano de ação", "Metas e indicadores", "Revisão estratégica", "Configurações"]);
+  expect(itensMenu([], ROTAS_CONSTRUIDAS).map((i) => i.rotulo)).toEqual(["Visão geral", "Meu diagnóstico", "Planejamento estratégico", "Biblioteca de estratégias", "Plano de ação", "Metas e indicadores", "Revisão estratégica", "Histórico", "Configurações"]);
 });
