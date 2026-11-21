@@ -10,17 +10,19 @@ import { PERGUNTAS_REVISAO, type RespostasRevisao } from "@/lib/domain/revisao";
 
 /** Perguntas da revisão com gravação automática; "Concluir" salva o relatório com o retrato do momento. */
 export function FormRevisao({ trimestre, inicial, faturamento, concluida }: { trimestre: number; inicial: RespostasRevisao; faturamento: number; concluida: boolean }) {
-  const [d, setD] = useState({ respostas: inicial, faturamento });
+  // O faturamento só é gravado se mudou nesta aba: uma aba aberta antes não apaga o valor gravado em outra.
+  const [d, setD] = useState({ respostas: inicial, faturamento, fatMudou: false });
+  const dados = (v: typeof d) => (v.fatMudou ? { respostas: v.respostas, faturamento: v.faturamento } : { respostas: v.respostas });
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
   const aviso = useAviso();
   const router = useRouter();
   const id = useId();
-  useGravacaoAutomatica(d, (v) => salvarRevisao(trimestre, v));
+  useGravacaoAutomatica(d, (v) => salvarRevisao(trimestre, dados(v)));
   async function concluir() {
     setEnviando(true); setErro("");
     try {
-      await salvarRevisao(trimestre, d); // garante que as últimas respostas entram no relatório
+      await salvarRevisao(trimestre, dados(d)); // garante que as últimas respostas entram no relatório
       const r = await concluirRevisao(trimestre);
       if (r.erro) setErro(r.erro === "sessao" ? "Sua sessão expirou. Copie o que escreveu e entre de novo." : r.erro);
       else { aviso({ texto: r.ok ?? "Revisão concluída." }); router.refresh(); }
@@ -36,7 +38,7 @@ export function FormRevisao({ trimestre, inicial, faturamento, concluida }: { tr
         </label>
       ))}
       <label className="flex max-w-xs flex-col gap-1.5 font-bold text-tinta" htmlFor={`${id}-f`}>Faturamento realizado no trimestre
-        <CampoMoeda id={`${id}-f`} valor={d.faturamento} onChange={(v) => setD((x) => ({ ...x, faturamento: v }))} /></label>
+        <CampoMoeda id={`${id}-f`} valor={d.faturamento} onChange={(v) => setD((x) => ({ ...x, faturamento: v, fatMudou: true }))} /></label>
       <div className="flex flex-wrap items-center gap-3">
         <Botao onClick={concluir} disabled={enviando || concluida}>{enviando ? "Salvando…" : concluida ? "Concluída" : "Concluir revisão"}</Botao>
         {!concluida && <span className="text-[0.88rem] text-sec">Ao concluir, o trimestre fica marcado como revisado. As respostas continuam editáveis.</span>}

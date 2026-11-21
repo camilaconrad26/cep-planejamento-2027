@@ -39,6 +39,7 @@ test.describe("mentora", () => {
     await expect(linha).toContainText(aluna.email);
     await linha.getByRole("link", { name: `Abrir o plano de ${nome}` }).click();
     await expect(page.getByText("Objetivo da aluna do painel")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1); // um título por página (o relatório vira h2 aqui)
     await expect(page.getByRole("button", { name: "Novo objetivo" })).toHaveCount(0); // só leitura
     await page.getByLabel("Nova senha provisória").fill("Provisoria#2027");
     await page.getByRole("button", { name: "Definir senha provisória" }).click();

@@ -4,6 +4,7 @@ import { Corpo, FaixaTitulo } from "@/components/layout/FaixaTitulo";
 import { Cartao } from "@/components/ui/Cartao";
 import { exigirSessao } from "@/lib/data/sessao";
 import { obterHistorico } from "@/lib/data/historico";
+import { MAX_HISTORICO, proximoLimite } from "@/lib/domain/atividade";
 
 export const metadata: Metadata = { title: "Histórico" };
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ const quando = (s: string | null) => (s ? new Date(s).toLocaleString("pt-BR", { 
 export default async function Historico({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await exigirSessao();
   const q = await searchParams;
-  const limite = Math.min(500, Math.max(50, Number(Array.isArray(q.mais) ? q.mais[0] : q.mais) || 50));
+  const limite = Math.min(MAX_HISTORICO, Math.max(50, Number(Array.isArray(q.mais) ? q.mais[0] : q.mais) || 50));
   const h = await obterHistorico(s.orgId, limite);
   return (
     <>
@@ -38,7 +39,9 @@ export default async function Historico({ searchParams }: { searchParams: Promis
                 <span className="text-[0.85rem] tabular-nums text-sec">{quando(a.em)}</span></li>
             ))}</ol>
           )}
-          {h.temMais && <Link href={`/historico?mais=${limite + 50}`} className="self-start font-bold text-ouro-texto underline underline-offset-4">Ver mais</Link>}
+          {proximoLimite(limite, h.temMais) !== null
+            ? <Link href={`/historico?mais=${proximoLimite(limite, h.temMais)}`} className="self-start font-bold text-ouro-texto underline underline-offset-4">Ver mais</Link>
+            : h.temMais && <p className="text-sec">Mostrando as {MAX_HISTORICO} alterações mais recentes.</p>}
         </Cartao>
       </Corpo>
     </>
