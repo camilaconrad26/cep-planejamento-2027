@@ -19,10 +19,10 @@ export function RedefinirSenha({ userId, nome }: { userId: string; nome: string 
     <form onSubmit={enviar} className="flex flex-col gap-2">
       <label htmlFor={id} className="font-bold text-tinta">Nova senha provisória</label>
       <div className="flex flex-wrap gap-2">
-        <input id={id} type="text" autoComplete="off" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} maxLength={72} className="campo min-w-0 flex-1 basis-56" />
+        <input id={id} aria-describedby={`${id}-ajuda`} type="text" autoComplete="off" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} maxLength={72} className="campo min-w-0 flex-1 basis-56" />
         <Botao type="submit" disabled={enviando || senha.length < 8}>{enviando ? "Aguarde…" : "Definir senha provisória"}</Botao>
       </div>
-      <p className="text-[0.85rem] text-sec">Mínimo de 8 caracteres. Envie a senha a {nome} por um canal seguro e peça que ela troque em Configurações.</p>
+      <p id={`${id}-ajuda`} className="text-[0.85rem] text-sec">Mínimo de 8 caracteres. Envie a senha a {nome} por um canal seguro e peça que ela troque em Configurações.</p>
       {erro && <p role="alert" className="font-bold text-alerta">{erro}</p>}
     </form>
   );
