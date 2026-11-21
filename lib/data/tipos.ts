@@ -16,6 +16,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      cep2027_planos: {
+        Row: { user_id: string; nome: string | null; email: string | null; dados: Json | null; criado_em: string; atualizado_em: string }
+        Insert: { user_id: string; nome?: string | null; email?: string | null; dados?: Json | null; criado_em?: string; atualizado_em?: string }
+        Update: { user_id?: string; nome?: string | null; email?: string | null; dados?: Json | null; criado_em?: string; atualizado_em?: string }
+        Relationships: []
+      }
       cep_activity: {
         Row: {
           acao: string
@@ -819,6 +825,7 @@ export type Database = {
           nome: string
           perfil: number | null
           texto_maior: boolean
+          importado_v1_em: string | null
           updated_at: string
           user_id: string
         }
@@ -828,6 +835,7 @@ export type Database = {
           nome: string
           perfil?: number | null
           texto_maior?: boolean
+          importado_v1_em?: string | null
           updated_at?: string
           user_id: string
         }
@@ -837,6 +845,7 @@ export type Database = {
           nome?: string
           perfil?: number | null
           texto_maior?: boolean
+          importado_v1_em?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1086,6 +1095,8 @@ export type Database = {
       }
       cep_excluir_minha_conta: { Args: never; Returns: undefined }
       cep_iniciar_minha_conta: { Args: never; Returns: string }
+      cep_usuarios_com_papel: { Args: never; Returns: string[] }
+      cep_ultima_atividade: { Args: never; Returns: { org_id: string; em: string }[] }
       cep_garantir_ciclo: {
         Args: { p_ano: number; p_org: string }
         Returns: string

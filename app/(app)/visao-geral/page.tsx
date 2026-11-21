@@ -14,8 +14,7 @@ import { proximoPasso } from "@/lib/domain/proximoPasso";
 export const metadata: Metadata = { title: "Visão geral" };
 export const dynamic = "force-dynamic";
 
-const EM_BREVE = [
-  ["Revisão estratégica e Histórico", "revisão de cada trimestre, relatórios e comparação entre ciclos"],
+const EM_BREVE: [string, string][] = [
 ];
 
 export default async function VisaoGeral() {
@@ -54,11 +53,13 @@ export default async function VisaoGeral() {
             ? <ul className="flex flex-wrap gap-2">{r.prioridades.map((p) => <li key={p} className="rounded-full border border-ouro-fio bg-papel-2 px-4 py-1.5 font-bold text-tinta">{nomeCategoria(p)}</li>)}</ul>
             : <p className="text-sec">Nenhuma categoria escolhida para este trimestre ainda.</p>}
         </Cartao>
+{EM_BREVE.length > 0 && (
         <section id="em-breve" aria-labelledby="titulo-em-breve" className="scroll-mt-24 rounded-cartao border border-dashed border-ouro-fio p-6">
           <h2 id="titulo-em-breve" className="font-display text-xl font-bold text-tinta">Próximas etapas do sistema</h2>
           <p className="mt-1 text-sec">Estes módulos estão em construção e entram no menu assim que ficarem prontos. Enquanto isso, comece pelo diagnóstico e pelo fechamento de 2026.</p>
           <ul className="mt-3 flex flex-col gap-1.5">{EM_BREVE.map(([t, d]) => <li key={t}><b className="text-tinta">{t}:</b> {d}.</li>)}</ul>
         </section>
+        )}
       </Corpo>
     </>
   );

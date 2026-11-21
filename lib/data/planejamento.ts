@@ -1,5 +1,6 @@
 import "server-only";
 import { criarClienteServidor } from "@/lib/data/supabase/servidor";
+import { obterCicloId } from "@/lib/data/ciclo";
 import type { Categoria } from "@/lib/domain/biblioteca";
 import type { KpiP, KrP, ObjetivoP, OkrP, TarefaP, Tri } from "@/lib/domain/arvore";
 import type { Status } from "@/lib/domain/ciclo";
@@ -14,8 +15,7 @@ const tri = (t: number | null) => (t === 1 || t === 2 || t === 3 || t === 4 ? (t
 /** Tudo o que a tela de planejamento mostra, do ciclo ativo da organização (RLS restringe à aluna). */
 export async function obterPlano(orgId: string): Promise<Plano> {
   const sb = await criarClienteServidor();
-  const { data: cicloId, error } = await sb.rpc("cep_garantir_ciclo", { p_org: orgId, p_ano: 2027 });
-  if (error || !cicloId) throw new Error("Não foi possível carregar o seu ciclo de planejamento.");
+  const cicloId = await obterCicloId(sb, orgId);
   const [ciclo, cats, prios, objs, tars, okrs, kpis] = await Promise.all([
     sb.from("cep_cycles").select("ano").eq("id", cicloId).single(),
     sb.from("cep_categories").select("id, slug, nome, descricao, objetivo, ordem").order("ordem"),

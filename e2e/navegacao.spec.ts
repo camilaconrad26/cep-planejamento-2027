@@ -10,7 +10,7 @@ test.describe("casca do app", () => {
     await expect(nav.getByRole("link", { name: "Visão geral" })).toHaveAttribute("aria-current", "page");
     await expect(nav.getByRole("link", { name: "Meu diagnóstico" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Biblioteca de estratégias" })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Revisão estratégica" })).toHaveCount(0); // módulo ainda não construído
+    await expect(nav.getByRole("link", { name: "Alunas" })).toHaveCount(0); // só a mentora vê
     await expect(page.getByRole("button", { name: "Menu" })).toBeHidden();
   });
 

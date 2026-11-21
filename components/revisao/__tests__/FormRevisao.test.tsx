@@ -1,0 +1,16 @@
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { FormRevisao } from "@/components/revisao/FormRevisao";
+import { ProvedorAviso } from "@/components/ui/Aviso";
+
+const salvar = vi.fn<(...a: unknown[]) => Promise<{ ok?: true }>>(async () => ({ ok: true }));
+vi.mock("@/lib/data/revisaoAcoes", () => ({ salvarRevisao: (...a: unknown[]) => salvar(...a), concluirRevisao: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+beforeEach(() => { salvar.mockClear(); vi.useFakeTimers(); });
+afterEach(() => vi.useRealTimers());
+
+it("grava enquanto digita, sem precisar sair do campo", async () => {
+  render(<ProvedorAviso><FormRevisao trimestre={1} inicial={{}} faturamento={0} concluida={false} /></ProvedorAviso>);
+  fireEvent.change(screen.getByLabelText("O que foi executado?"), { target: { value: "Lives semanais" } });
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+  expect(salvar).toHaveBeenCalledWith(1, { respostas: { executado: "Lives semanais" }, faturamento: 0 });
+});

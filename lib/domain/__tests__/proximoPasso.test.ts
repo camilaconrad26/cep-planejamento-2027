@@ -40,3 +40,9 @@ it("diagnóstico começado e não concluído: continuar antes de qualquer outra 
   expect(p.titulo).toBe("Continue o diagnóstico");
   expect(p.href).toBe("/diagnostico");
 });
+
+it("revisão leva ao trimestre que terminou", () => {
+  const p = proximoPasso({ ...base, trimestre: 3, trimestreAnteriorSemRevisao: true });
+  expect(p.codigo).toBe("revisao");
+  expect(p.href).toBe("/revisao?t=2");
+});
