@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Visão geral" };
 export const dynamic = "force-dynamic";
 
 const EM_BREVE = [
-  ["Revisão estratégica e Histórico", "revisão de cada trimestre, relatórios e comparação entre ciclos"],
+  ["Histórico", "relatórios de revisão, ações concluídas e registro de alterações"],
 ];
 
 export default async function VisaoGeral() {
