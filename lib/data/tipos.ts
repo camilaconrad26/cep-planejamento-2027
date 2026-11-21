@@ -16,6 +16,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      cep2027_planos: {
+        Row: { user_id: string; nome: string | null; email: string | null; dados: Json | null; criado_em: string; atualizado_em: string }
+        Insert: { user_id: string; nome?: string | null; email?: string | null; dados?: Json | null; criado_em?: string; atualizado_em?: string }
+        Update: { user_id?: string; nome?: string | null; email?: string | null; dados?: Json | null; criado_em?: string; atualizado_em?: string }
+        Relationships: []
+      }
       cep_activity: {
         Row: {
           acao: string
