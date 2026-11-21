@@ -13,12 +13,10 @@ test("revisao", async ({ page }) => {
   await page.getByLabel("O que impediu a execução?").click();
   await expect(page.locator("#salvo")).toContainText("Salvo às");
   await page.getByRole("button", { name: "Concluir revisão" }).click();
-  const rel = page.getByRole("region", { name: "Relatório do 1º trimestre" });
-  await expect(rel).toBeVisible();
-  await expect(rel.getByRole("heading", { name: "Execução das ações" })).toBeVisible();
-  await expect(rel.getByText("Lives semanais e duas parcerias")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Revisão do 1º trimestre concluída em" })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("region", { name: "Relatório do 1º trimestre" }).getByText("Menos eventos presenciais")).toBeVisible();
+  await expect(page.getByLabel("Quais precisam ser alteradas?")).toHaveValue("Menos eventos presenciais");
+  await expect(page.getByRole("button", { name: "Concluída" })).toBeDisabled();
   await page.goto("/metas");
   await expect(page.getByTestId("pct-real-1")).toHaveText("—"); // sem meta do trimestre, sem %
   expect((await page.getByLabel("Realizado no 1º trimestre").inputValue()).replace(/\s/g, " ")).toBe("R$ 150.000");

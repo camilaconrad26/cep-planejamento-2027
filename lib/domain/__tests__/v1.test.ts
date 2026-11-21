@@ -25,13 +25,13 @@ test("mapeia o planejamento da versão anterior", () => {
   expect(r.fechamento.faturamento).toBe(1000000);
   expect(r.fechamento.notas.comercial).toBe(7);
   expect(r.fechamento.listas.deuCerto.map((i) => i.texto)).toEqual(["Fechei holdings", "Parceria com contador"]);
-  expect(r.itens).toEqual([{ perfil: 2, cat: 1, nivel: 1, tri: 2, prazo: "2027-03-01", status: "concluido" }]);
+  expect(r.itens).toEqual([{ perfil: 2, cat: 1, nivel: 1, tri: 2, prazo: "2027-03-01", status: "concluido", texto: null }]);
   expect(r.proprios).toEqual([
     { cat: 3, nivel: 0, texto: "Método próprio", tri: 1, prazo: null, status: "nao_iniciado" },
     { cat: 3, nivel: 2, texto: "Checklist", tri: null, prazo: null, status: "nao_iniciado" },
   ]);
-  expect(r.tarefas).toEqual([{ texto: "Ligar para o contador", tri: 1, feito: false }]);
-  expect(r.pendencias).toEqual([{ texto: "Site novo", tri: 2, feito: true }]);
+  expect(r.tarefas).toEqual([{ texto: "Ligar para o contador", tri: 1, feito: false, idV1: null }]);
+  expect(r.pendencias).toEqual([{ texto: "Site novo", tri: 2, feito: true, itemId: "v1-pend-0" }]);
   expect(r.metas.anual.meta).toEqual({ faturamento: 1200000, lucratividade: 30, anuncios: 0, time: 3 });
   expect(r.metas.anual.super.faturamento).toBe(1500000);
   expect(r.metas.trimestres[1].meta).toBe(300000);
@@ -40,4 +40,40 @@ test("mapeia o planejamento da versão anterior", () => {
   expect(r.metas.realizado[1]).toBe(150000);
   expect(r.vendas).toEqual([{ mes: 4, produto: "Holding", acao: "Live", ticket: 30000, quantidade: 2, responsavel: "Eu" }]);
   expect(r.revisoes).toEqual([{ trimestre: 1, aprendizado: "Começar cedo", ajustes: ["Mais lives"] }]);
+});
+
+test("leva o texto editado e os vínculos de tarefa", () => {
+  const r = mapearV1({
+    perfil: 1,
+    itens: { p1c1n1: { fazer: true, texto: "Meu texto do item", tri: "1" } },
+    retro: { comecar: [{ id: "i1", texto: "Fazer lives", tarefa: "t1" }], pend: [{ texto: "Site", destino: "levar", tri: "2" }] },
+    tarefas: [{ id: "t1", texto: "Fazer lives", tri: "3", feito: false }],
+  });
+  expect(r.itens[0].texto).toBe("Meu texto do item");
+  expect(r.fechamento.listas.comecar[0]).toMatchObject({ texto: "Fazer lives", tarefaV1: "t1" });
+  expect(r.tarefas[0]).toMatchObject({ idV1: "t1", texto: "Fazer lives" });
+});
+
+test("mapa da biblioteca: só itens ativos e, havendo mais de um, o original (menor ordem)", async () => {
+  const { mapaBiblioteca } = await import("@/lib/domain/v1");
+  const m = mapaBiblioteca([
+    { id: "novo", perfil: 1, nivel: "tatico", ordemCategoria: 2, ordem: 9, ativo: true },
+    { id: "seed", perfil: 1, nivel: "tatico", ordemCategoria: 2, ordem: 2, ativo: true },
+    { id: "inativo", perfil: 1, nivel: "operacional", ordemCategoria: 2, ordem: 3, ativo: false },
+  ]);
+  expect(m.get("1:1:1")).toBe("seed");
+  expect(m.get("1:1:2")).toBeUndefined();
+});
+
+test("mescla sem sobrescrever o que já foi preenchido na v2", async () => {
+  const { mesclarMetas, mesclarRespostas } = await import("@/lib/domain/v1");
+  const { metasVazias } = await import("@/lib/domain/metas");
+  const v2 = metasVazias(); v2.anual.meta.faturamento = 2000000; v2.porque = "já escrito";
+  const v1 = metasVazias(); v1.anual.meta = { faturamento: 1000000, lucratividade: 30, anuncios: 0, time: 0 }; v1.anual.super.faturamento = 1500000; v1.porque = "v1"; v1.realizado[1] = 10;
+  const r = mesclarMetas(v2, v1);
+  expect(r.anual.meta.faturamento).toBe(2000000);
+  expect(r.anual.super.faturamento).toBe(1500000);
+  expect(r.porque).toBe("já escrito");
+  expect(r.realizado[1]).toBe(10);
+  expect(mesclarRespostas({ executado: "v2" }, { executado: "v1", alterar: "ajuste" })).toEqual({ executado: "v2", alterar: "ajuste" });
 });

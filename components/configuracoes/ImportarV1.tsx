@@ -12,7 +12,7 @@ export function ImportarV1() {
   const router = useRouter();
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sec">Encontramos o planejamento que você preencheu na versão anterior. Traga para cá o fechamento de 2026, os itens marcados, as tarefas, as metas e os trimestres. Isso é feito uma vez só.</p>
+      <p className="text-sec">Encontramos o planejamento que você preencheu na versão anterior. Traga para cá o fechamento de 2026, os itens marcados, as tarefas, as metas e os trimestres. Isso é feito uma vez só. Nada que você já preencheu aqui será substituído: só completamos o que ainda está em branco.</p>
       <div><Botao disabled={enviando} onClick={async () => {
         setEnviando(true); setErro("");
         try { const r = await importarV1(); if (r.erro) setErro(r.erro); else { aviso({ texto: r.ok! }); router.refresh(); } }

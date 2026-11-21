@@ -31,15 +31,15 @@ export function FormRevisao({ trimestre, inicial, faturamento, concluida }: { tr
       <h2 id={`${id}-h`} className="font-display text-xl font-bold text-tinta">Perguntas do {trimestre}º trimestre</h2>
       {PERGUNTAS_REVISAO.map((p) => (
         <label key={p.chave} className="flex flex-col gap-1.5 font-bold text-tinta">{p.texto}
-          <textarea rows={3} maxLength={5000} defaultValue={d.respostas[p.chave] ?? ""} className="campo font-normal"
-            onBlur={(e) => { const v = e.target.value; setD((x) => (x.respostas[p.chave] === v ? x : { ...x, respostas: { ...x.respostas, [p.chave]: v } })); }} />
+          <textarea rows={3} maxLength={5000} value={d.respostas[p.chave] ?? ""} className="campo font-normal"
+            onChange={(e) => { const v = e.target.value; setD((x) => ({ ...x, respostas: { ...x.respostas, [p.chave]: v } })); }} />
         </label>
       ))}
       <label className="flex max-w-xs flex-col gap-1.5 font-bold text-tinta" htmlFor={`${id}-f`}>Faturamento realizado no trimestre
         <CampoMoeda id={`${id}-f`} valor={d.faturamento} onChange={(v) => setD((x) => ({ ...x, faturamento: v }))} /></label>
       <div className="flex flex-wrap items-center gap-3">
-        <Botao onClick={concluir} disabled={enviando}>{enviando ? "Salvando…" : concluida ? "Atualizar o relatório" : "Concluir revisão"}</Botao>
-        <span className="text-[0.88rem] text-sec">{concluida ? "Atualizar refaz o retrato dos indicadores com os números de hoje." : "Ao concluir, o sistema guarda um retrato dos indicadores deste momento."}</span>
+        <Botao onClick={concluir} disabled={enviando || concluida}>{enviando ? "Salvando…" : concluida ? "Concluída" : "Concluir revisão"}</Botao>
+        {!concluida && <span className="text-[0.88rem] text-sec">Ao concluir, o trimestre fica marcado como revisado. As respostas continuam editáveis.</span>}
       </div>
       {erro && <p role="alert" className="font-bold text-alerta">{erro}</p>}
     </section>

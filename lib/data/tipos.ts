@@ -1095,6 +1095,8 @@ export type Database = {
       }
       cep_excluir_minha_conta: { Args: never; Returns: undefined }
       cep_iniciar_minha_conta: { Args: never; Returns: string }
+      cep_usuarios_com_papel: { Args: never; Returns: string[] }
+      cep_ultima_atividade: { Args: never; Returns: { org_id: string; em: string }[] }
       cep_garantir_ciclo: {
         Args: { p_ano: number; p_org: string }
         Returns: string

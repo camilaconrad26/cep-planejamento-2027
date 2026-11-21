@@ -52,5 +52,5 @@ export async function concluirRevisao(trimestre: number): Promise<{ ok?: string;
     { org_id: c.s.orgId, cycle_id: c.ciclo, trimestre, retrato, concluida_em: new Date().toISOString() }, { onConflict: "cycle_id,trimestre" });
   if (error) return { erro: FALHA };
   revalidatePath("/revisao"); revalidatePath("/visao-geral"); revalidatePath("/historico");
-  return { ok: "Revisão concluída. O relatório foi salvo." };
+  return { ok: "Revisão concluída." };
 }

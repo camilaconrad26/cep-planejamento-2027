@@ -28,8 +28,10 @@ export function proximoPasso(s: Retrato, construidas?: ReadonlySet<Rota>): Passo
     const passo = p("medir", "Atualize seus indicadores", "Há resultado-chave ou indicador sem medição há mais de 30 dias.", ROTAS.metas, "Lançar medições", construidas);
     return passo.href === ROTAS.metas ? { ...passo, href: `${ROTAS.metas}?aba=kpis` } : passo;
   }
-  if (ex && s.trimestreAnteriorSemRevisao)
-    return p("revisao", "Revise o trimestre que terminou", "Registre o que foi feito, o que travou e o que muda no próximo trimestre.", ROTAS.revisao, "Fazer a revisão", construidas);
+  if (ex && s.trimestreAnteriorSemRevisao) {
+    const passo = p("revisao", "Revise o trimestre que terminou", "Registre o que foi feito, o que travou e o que muda no próximo trimestre.", ROTAS.revisao, "Fazer a revisão", construidas);
+    return passo.href === ROTAS.revisao ? { ...passo, href: `${ROTAS.revisao}?t=${s.trimestre - 1}` } : passo;
+  }
   if (s.vencendo7dias > 0)
     return p("vencendo", s.vencendo7dias === 1 ? "1 ação vence nesta semana" : `${s.vencendo7dias} ações vencem nesta semana`, "Confira o que precisa ser entregue nos próximos 7 dias.", ROTAS.planoDeAcao, "Ver prioridades", construidas);
   return p("em-dia", "Tudo em dia", "Seu planejamento está atualizado. Siga com as ações do trimestre.", ROTAS.planoDeAcao, "Abrir o plano de ação", construidas);

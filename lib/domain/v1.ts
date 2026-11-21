@@ -9,10 +9,10 @@ type Tri = 1 | 2 | 3 | 4;
 export type ImportacaoV1 = {
   perfil: 1 | 2 | 3 | null;
   fechamento: Fechamento;
-  itens: { perfil: number; cat: number; nivel: number; tri: Tri | null; prazo: string | null; status: Status }[];
+  itens: { perfil: number; cat: number; nivel: number; tri: Tri | null; prazo: string | null; status: Status; texto: string | null }[];
   proprios: { cat: number; nivel: number; texto: string; tri: Tri | null; prazo: string | null; status: Status }[];
-  tarefas: { texto: string; tri: Tri | null; feito: boolean }[];
-  pendencias: { texto: string; tri: Tri | null; feito: boolean }[];
+  tarefas: { texto: string; tri: Tri | null; feito: boolean; idV1: string | null }[];
+  pendencias: { texto: string; tri: Tri | null; feito: boolean; itemId: string }[];
   metas: MetasForm;
   vendas: Omit<AcaoVenda, "id">[];
   revisoes: { trimestre: number; aprendizado: string; ajustes: string[] }[];
@@ -38,7 +38,10 @@ export function mapearV1(bruto: unknown): ImportacaoV1 {
     const c = CATEGORIAS[Number(ci)]; const v = Number(n);
     if (c && Number.isFinite(v) && v >= 0 && v <= 10) notas[c.slug] = v;
   }
-  const comoLista = (x: unknown, chave: string) => lista(x).map((texto, i) => ({ id: `v1-${chave}-${i}`, texto }));
+  // Itens das listas mantêm o vínculo com a tarefa criada na v1 ("tarefa"), para não oferecer "Criar tarefa" de novo.
+  const comoLista = (x: unknown, chave: string) => (Array.isArray(x)
+    ? x.map(obj).filter((o) => txt(o.texto)).map((o, i) => ({ id: `v1-${chave}-${i}`, texto: txt(o.texto), ...(txt(o.tarefa) ? { tarefaV1: txt(o.tarefa) } : {}) }))
+    : lista(x).map((texto, i) => ({ id: `v1-${chave}-${i}`, texto })));
   const fechamento = lerFechamento({
     faturamento: num(retro.fat), meta: num(retro.meta), contratos: Math.round(num(retro.contratos)), origem: txt(retro.origem), notas,
     listas: {
@@ -54,15 +57,16 @@ export function mapearV1(bruto: unknown): ImportacaoV1 {
   const itens: ImportacaoV1["itens"] = [];
   for (const [chave, v] of Object.entries(obj(d.itens))) {
     const k = /^p([123])c([0-6])n([0-4])$/.exec(chave); const o = obj(v);
-    if (k && o.fazer) itens.push({ perfil: Number(k[1]), cat: Number(k[2]), nivel: Number(k[3]), tri: tri(o.tri), prazo: data(o.prazo), status: status(o.status) });
+    if (k && o.fazer) itens.push({ perfil: Number(k[1]), cat: Number(k[2]), nivel: Number(k[3]), tri: tri(o.tri), prazo: data(o.prazo), status: status(o.status), texto: txt(o.texto) || null });
   }
   const proprios = (Array.isArray(d.custom) ? d.custom : []).map(obj)
     .filter((o) => o.fazer !== false && txt(o.texto) && Number(o.cat) >= 0 && Number(o.cat) <= 6 && Number(o.nivel) >= 0 && Number(o.nivel) <= 4)
     .map((o) => ({ cat: Number(o.cat), nivel: Number(o.nivel), texto: txt(o.texto), tri: tri(o.tri), prazo: data(o.prazo), status: status(o.status) }));
   const tarefas = (Array.isArray(d.tarefas) ? d.tarefas : []).map(obj).filter((o) => txt(o.texto))
-    .map((o) => ({ texto: txt(o.texto), tri: tri(o.tri), feito: !!o.feito }));
-  const pendencias = (Array.isArray(retro.pend) ? retro.pend : []).map(obj).filter((o) => o.destino === "levar" && txt(o.texto))
-    .map((o) => ({ texto: txt(o.texto), tri: tri(o.tri), feito: !!o.feito }));
+    .map((o) => ({ texto: txt(o.texto), tri: tri(o.tri), feito: !!o.feito, idV1: txt(o.id) || null }));
+  const pendencias = (Array.isArray(retro.pend) ? retro.pend : []).map(obj)
+    .map((o, i) => ({ o, itemId: `v1-pend-${i}` })).filter(({ o }) => o.destino === "levar" && txt(o.texto))
+    .map(({ o, itemId }) => ({ texto: txt(o.texto), tri: tri(o.tri), feito: !!o.feito, itemId }));
 
   const metas = metasVazias();
   const anual = obj(m.anual);
@@ -89,4 +93,40 @@ export function mapearV1(bruto: unknown): ImportacaoV1 {
     .filter((r) => r.aprendizado || r.ajustes.length);
 
   return { perfil, fechamento, itens, proprios, tarefas, pendencias, metas, vendas, revisoes };
+}
+
+const NIVEIS = ["estrategico", "tatico", "operacional", "okr", "kpi"];
+/** (perfil:categoria:nível) → id do item da biblioteca: só ativos; se houver mais de um, o original (menor ordem). */
+export function mapaBiblioteca(itens: { id: string; perfil: number; nivel: string; ordemCategoria: number; ordem: number; ativo: boolean }[]): Map<string, string> {
+  const m = new Map<string, { id: string; ordem: number }>();
+  for (const i of itens) {
+    if (!i.ativo) continue;
+    const k = `${i.perfil}:${i.ordemCategoria - 1}:${NIVEIS.indexOf(i.nivel)}`;
+    const atual = m.get(k);
+    if (!atual || i.ordem < atual.ordem) m.set(k, { id: i.id, ordem: i.ordem });
+  }
+  return new Map([...m].map(([k, v]) => [k, v.id]));
+}
+
+/** Metas: só preenche o que ainda está vazio na v2 (linha por linha); nada já digitado é substituído. */
+export function mesclarMetas(v2: MetasForm, v1: MetasForm): MetasForm {
+  const r: MetasForm = structuredClone(v2);
+  const vaziaAnual = (l: MetasForm["anual"]["meta"]) => !l.faturamento && !l.lucratividade && !l.anuncios && !l.time;
+  for (const a of ALT) {
+    if (vaziaAnual(r.anual[a])) r.anual[a] = { ...v1.anual[a] };
+    for (const t of [1, 2, 3, 4] as Tri[]) if (!r.trimestres[t][a]) r.trimestres[t][a] = v1.trimestres[t][a];
+  }
+  for (const p of ["entrada", "principal", "alto_valor"] as const) {
+    const x = r.produtos[p];
+    if (!x.nome && !x.ticket && !x.vendas.meta && !x.vendas.super && !x.vendas.mega) r.produtos[p] = structuredClone(v1.produtos[p]);
+  }
+  for (const t of [1, 2, 3, 4] as Tri[]) if (!r.realizado[t]) r.realizado[t] = v1.realizado[t];
+  if (!r.porque.trim()) r.porque = v1.porque;
+  return r;
+}
+/** Respostas da revisão: só entram as que a aluna ainda não escreveu na v2. */
+export function mesclarRespostas<T extends Record<string, string | undefined>>(v2: T, v1: T): T {
+  const r = { ...v2 } as Record<string, string | undefined>;
+  for (const [k, v] of Object.entries(v1)) if (v && !(r[k] ?? "").trim()) r[k] = v;
+  return r as T;
 }

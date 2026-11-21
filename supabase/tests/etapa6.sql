@@ -30,12 +30,15 @@ insert into r select 'B vê revisões de A', '0', count(*)::text from public.cep
 insert into r select 'B lê plano v1 de A', '0', count(*)::text from public.cep2027_planos where user_id = 'a6a6a6a6-0000-4000-8000-0000000000a6';
 with u as (update public.cep_profiles set importado_v1_em = null where user_id = 'a6a6a6a6-0000-4000-8000-0000000000a6' returning 1)
   insert into r select 'B altera marca de A', '0', count(*)::text from u;
+insert into r select 'aluna não vê quem tem papel', '0', count(*)::text from public.cep_usuarios_com_papel();
 
 select set_config('request.jwt.claims', '{"sub":"c6c6c6c6-0000-4000-8000-0000000000c6","role":"authenticated"}', true);
 insert into r select 'mentora lê revisão de A', '1', count(*)::text from public.cep_reviews where org_id = current_setting('t.org_a')::uuid;
 with u as (update public.cep_reviews set respostas = '{}' where org_id = current_setting('t.org_a')::uuid returning 1)
   insert into r select 'mentora altera revisão de A', '0', count(*)::text from u;
 insert into r select 'mentora lê histórico de A', 'true', (count(*) > 0)::text from public.cep_activity where org_id = current_setting('t.org_a')::uuid;
+insert into r select 'mentora vê quem tem papel', 'c6c6c6c6-0000-4000-8000-0000000000c6', string_agg(u::text, ',') from public.cep_usuarios_com_papel() u where u in ('a6a6a6a6-0000-4000-8000-0000000000a6', 'c6c6c6c6-0000-4000-8000-0000000000c6');
+insert into r select 'última atividade por organização (uma linha por org)', 'true', (count(*) = count(distinct org_id) and count(*) > 0)::text from public.cep_ultima_atividade();
 insert into r select 'mentora lê perfil de A com a marca', 'true', (importado_v1_em is not null)::text from public.cep_profiles where user_id = 'a6a6a6a6-0000-4000-8000-0000000000a6';
 reset role;
 
