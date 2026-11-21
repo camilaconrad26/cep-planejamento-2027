@@ -35,11 +35,12 @@ Deno.serve(async (req: Request) => {
     if (senha.length < 8) return resp(400, { erro: "A senha precisa de pelo menos 8 caracteres." });
     if (senha.length > 72) return resp(400, { erro: "A senha pode ter no máximo 72 caracteres." });
     // Limite de tentativas: o app chama daqui do servidor dele (um IP só para a turma toda) e informa o IP
-    // de quem está se cadastrando. Conta 30 por visitante e, no total, 300 por quem chama — quem forjar o
-    // cabeçalho continua preso ao total do próprio IP.
+    // de quem está se cadastrando. Conta 100 por visitante (uma turma no mesmo Wi-Fi tem o mesmo IP) e, no total,
+    // 300 por quem chama — quem forjar o cabeçalho continua preso ao total do próprio IP (o x-forwarded-for é
+    // reescrito pelo gateway do Supabase: verificado em 21/11/2026 enviando um valor falso).
     const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "desconhecido";
     const visitante = (req.headers.get("x-cep-visitante") ?? "").trim().slice(0, 64);
-    const limites = visitante ? [[`servidor:${ip}`, 300], [`${ip}|${visitante}`, 30]] as const : [[ip, 30]] as const;
+    const limites = visitante ? [[`servidor:${ip}`, 300], [`${ip}|${visitante}`, 100]] as const : [[ip, 30]] as const;
     for (const [chave, limite] of limites) {
       const { data: liberado, error: eLim } = await admin.rpc("cep_registrar_tentativa", { p_ip: chave, p_limite: limite });
       if (eLim) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });

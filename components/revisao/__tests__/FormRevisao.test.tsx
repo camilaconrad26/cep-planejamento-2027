@@ -21,3 +21,12 @@ it("não regrava o faturamento que não mudou nesta aba (outra aba pode ter muda
   await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
   expect(salvar).toHaveBeenLastCalledWith(2, { respostas: { executado: "Parcerias" } });
 });
+
+it("passar pelo campo de faturamento sem mudar o valor não o regrava", async () => {
+  render(<ProvedorAviso><FormRevisao trimestre={3} inicial={{}} faturamento={0} concluida={false} /></ProvedorAviso>);
+  fireEvent.change(screen.getByLabelText("O que foi executado?"), { target: { value: "Eventos" } });
+  const fat = screen.getByLabelText("Faturamento realizado no trimestre");
+  fireEvent.focus(fat); fireEvent.blur(fat);
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+  expect(salvar).toHaveBeenLastCalledWith(3, { respostas: { executado: "Eventos" } });
+});

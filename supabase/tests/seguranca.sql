@@ -94,8 +94,28 @@ begin
         res := 'permitido';
       exception when insufficient_privilege then res := 'negado'; when others then res := 'erro ' || sqlstate; end;
       insert into r values (quem || ' insere em nome de A em ' || l.tabela, 'negado', res);
+      -- a mesma linha, mas em nome de quem ataca (ex.: B se filia à organização de A)
+      if l.exemplo ? 'user_id' and l.exemplo ? 'org_id' and nullif(current_setting('request.jwt.claims', true)::jsonb->>'sub', '') is not null then
+        begin
+          execute format('insert into public.%I (%s) select %s from jsonb_populate_record(null::public.%I, $1)', l.tabela, l.cols, l.cols, l.tabela)
+            using jsonb_set(l.exemplo, '{user_id}', to_jsonb(current_setting('request.jwt.claims', true)::jsonb->>'sub'));
+          res := 'permitido';
+        exception when insufficient_privilege then res := 'negado'; when others then res := 'erro ' || sqlstate; end;
+        insert into r values (quem || ' insere em seu nome em ' || l.tabela || ' (dados de A)', 'negado', res);
+      end if;
     end if;
   end loop;
+  -- dar-se um papel (cep_roles não tem linha de A para copiar)
+  if nullif(current_setting('request.jwt.claims', true)::jsonb->>'sub', '') is not null then
+    begin
+      insert into public.cep_roles (user_id, papel) values ((current_setting('request.jwt.claims', true)::jsonb->>'sub')::uuid, 'mentora'); res := 'permitido';
+    exception when insufficient_privilege then res := 'negado'; when others then res := 'erro ' || sqlstate; end;
+    insert into r values (quem || ' se dá o papel de mentora', 'negado', res);
+    begin
+      insert into public.cep_roles (user_id, papel) values ((current_setting('request.jwt.claims', true)::jsonb->>'sub')::uuid, 'admin'); res := 'permitido';
+    exception when insufficient_privilege then res := 'negado'; when others then res := 'erro ' || sqlstate; end;
+    insert into r values (quem || ' se dá o papel de admin', 'negado', res);
+  end if;
 end $$;
 grant execute on function pg_temp.atacar(text, boolean) to public;
 
@@ -124,5 +144,11 @@ insert into r select 'cep_iniciar_conta (cria conta para qualquer id) só pelo s
   has_function_privilege('authenticated', 'public.cep_iniciar_conta(uuid, text, text)', 'execute')::text;
 insert into r select 'gatilho de histórico continua gravando', 'true', (count(*) > 5)::text from public.cep_activity where org_id = current_setting('t.org_a')::uuid;
 
-select verificacao, esperado, obtido, esperado = obtido as ok from r order by ok, verificacao;
+select verificacao, esperado, obtido, esperado is not distinct from obtido as ok from r order by ok, verificacao;
+-- Falha alta se qualquer verificação não bater (não depende de alguém ler as 300+ linhas).
+do $$ begin
+  if exists (select 1 from r where esperado is distinct from obtido) then
+    raise exception 'seguranca.sql: % verificação(ões) falharam', (select count(*) from r where esperado is distinct from obtido);
+  end if;
+end $$;
 rollback;

@@ -38,7 +38,7 @@ export function FormRevisao({ trimestre, inicial, faturamento, concluida }: { tr
         </label>
       ))}
       <label className="flex max-w-xs flex-col gap-1.5 font-bold text-tinta" htmlFor={`${id}-f`}>Faturamento realizado no trimestre
-        <CampoMoeda id={`${id}-f`} valor={d.faturamento} onChange={(v) => setD((x) => ({ ...x, faturamento: v, fatMudou: true }))} /></label>
+        <CampoMoeda id={`${id}-f`} valor={d.faturamento} onChange={(v) => setD((x) => (v === x.faturamento ? x : { ...x, faturamento: v, fatMudou: true }))} /></label>
       <div className="flex flex-wrap items-center gap-3">
         <Botao onClick={concluir} disabled={enviando || concluida}>{enviando ? "Salvando…" : concluida ? "Concluída" : "Concluir revisão"}</Botao>
         {!concluida && <span className="text-[0.88rem] text-sec">Ao concluir, o trimestre fica marcado como revisado. As respostas continuam editáveis.</span>}
