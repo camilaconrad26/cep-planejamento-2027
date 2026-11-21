@@ -1,7 +1,7 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ComponentProps } from "react";
 import { cx } from "@/lib/cx";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+type Props = ComponentProps<"button"> & {
   variante?: "primario" | "secundario" | "perigo";
   tamanho?: "normal" | "mini";
   sobreEscuro?: boolean;
