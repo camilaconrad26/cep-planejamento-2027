@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const acao: Acao = { id: "t1", titulo: "Gravar vídeo", objetivo: null, categoria: null, nivel: "operacional", responsavel: "", prioridade: "media", status: "nao_iniciado", inicio: null, prazo: null, trimestre: 2 };
 const montar = () => render(<ProvedorAviso><EditarAcao acao={acao} /></ProvedorAviso>);
-beforeEach(() => atualizar.mockClear());
+beforeEach(() => { atualizar.mockClear(); });
 
 it("prazo-antes-do-inicio", async () => {
   montar();

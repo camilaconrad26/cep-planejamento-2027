@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ItemCalendario } from "@/components/acoes/ItemCalendario";
+import { ItemCalendario, PainelEdicaoCalendario, ProvedorEdicaoCalendario } from "@/components/acoes/ItemCalendario";
 import { acoesNoDia, diaDaSemana, gradeMes, semanaDe, somarDias, somarMeses, urlAcoes, type Acao, type FiltrosAcoes } from "@/lib/domain/acoes";
 import { MESES } from "@/lib/domain/metas";
 
@@ -23,6 +23,7 @@ export function Calendario({ acoes, f, hoje }: { acoes: Acao[]; f: FiltrosAcoes;
   };
 
   return (
+    <ProvedorEdicaoCalendario>
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-cartao border border-linha bg-white px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -89,11 +90,14 @@ export function Calendario({ acoes, f, hoje }: { acoes: Acao[]; f: FiltrosAcoes;
         {f.cal === "dia" && (lista(data) ?? <p className="text-sec">Nenhuma ação com prazo neste dia.</p>)}
       </div>
 
+      <PainelEdicaoCalendario />
+
       <section aria-labelledby="sem-prazo" className="flex flex-col gap-2 rounded-cartao border border-linha bg-white px-4 py-4 sm:px-6">
         <h2 id="sem-prazo" className="font-display text-lg font-bold text-tinta">Sem prazo <span className="text-ouro-texto">({semPrazo.length})</span></h2>
         {semPrazo.length === 0 ? <p className="text-sec">Todas as ações têm prazo.</p>
           : <ul className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">{semPrazo.map((a) => <ItemCalendario key={a.id} acao={a} hoje={hoje} />)}</ul>}
       </section>
     </div>
+    </ProvedorEdicaoCalendario>
   );
 }

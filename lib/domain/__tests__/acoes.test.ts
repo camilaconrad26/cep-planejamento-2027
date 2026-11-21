@@ -79,3 +79,22 @@ describe("calendário", () => {
   });
   test("ações do dia pelo prazo", () => expect(ids(acoesNoDia(lista, "2027-03-09"))).toEqual(["Reunião com contador"]));
 });
+
+describe("revisão final", () => {
+  test("data de conclusão só muda quando o status muda", async () => {
+    const { conclusao } = await import("@/lib/domain/acoes");
+    expect(conclusao("concluido", "concluido", "2027-05-01T00:00:00Z")).toEqual({});
+    expect(conclusao("em_andamento", "concluido", "2027-05-01T00:00:00Z")).toEqual({ concluido_em: "2027-05-01T00:00:00Z" });
+    expect(conclusao("concluido", "em_andamento", "2027-05-01T00:00:00Z")).toEqual({ concluido_em: null });
+    expect(conclusao("nao_iniciado", "em_andamento", "x")).toEqual({});
+  });
+  test("cabeçalho alterna o sentido, inclusive prioridade", async () => {
+    const { proximoSentido } = await import("@/lib/domain/acoes");
+    expect(proximoSentido({ ...f(), ordem: "prioridade", sentido: "desc" }, "prioridade")).toBe("asc");
+    expect(proximoSentido({ ...f(), ordem: "prioridade", sentido: "asc" }, "prioridade")).toBe("desc");
+    expect(proximoSentido({ ...f(), ordem: "prazo", sentido: "asc" }, "prioridade")).toBe("desc");
+    expect(proximoSentido({ ...f(), ordem: "prazo", sentido: "asc" }, "prazo")).toBe("desc");
+    expect(proximoSentido({ ...f(), ordem: "prioridade", sentido: "asc" }, "titulo")).toBe("asc");
+  });
+  test("datas fora de 2000–2100 são ignoradas", () => expect(f({ data: "0001-01-01" }).data).toBeNull());
+});

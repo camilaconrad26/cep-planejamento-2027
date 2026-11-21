@@ -8,7 +8,7 @@ import { Kanban } from "@/components/acoes/Kanban";
 import { Calendario } from "@/components/acoes/Calendario";
 import { exigirSessao } from "@/lib/data/sessao";
 import { obterAcoes } from "@/lib/data/acoes";
-import { VISOES_ACOES, filtrarAcoes, lerFiltrosAcoes, ordenarAcoes, urlAcoes, type Ordem } from "@/lib/domain/acoes";
+import { VISOES_ACOES, proximoSentido, filtrarAcoes, lerFiltrosAcoes, ordenarAcoes, urlAcoes, type Ordem } from "@/lib/domain/acoes";
 import { hojeSP } from "@/lib/domain/ciclo";
 
 export const metadata: Metadata = { title: "Plano de ação" };
@@ -22,7 +22,7 @@ export default async function PlanoDeAcao({ searchParams }: { searchParams: Prom
   // No Kanban a coluna "Concluída" sempre aparece com as concluídas (o filtro "Mostrar concluídas" vale para as outras visões).
   const visiveis = ordenarAcoes(filtrarAcoes(d.acoes, f.visao === "kanban" ? { ...f, concluidas: true } : f, hoje), f.ordem, f.sentido);
   const hrefOrdem = Object.fromEntries((["prazo", "prioridade", "titulo", "status", "inicio"] as Ordem[])
-    .map((o) => [o, urlAcoes(f, { ordem: o, sentido: f.ordem === o && f.sentido === "asc" ? "desc" : o === "prioridade" ? "desc" : "asc" })])) as Record<Ordem, string>;
+    .map((o) => [o, urlAcoes(f, { ordem: o, sentido: proximoSentido(f, o) })])) as Record<Ordem, string>;
 
   return (
     <>

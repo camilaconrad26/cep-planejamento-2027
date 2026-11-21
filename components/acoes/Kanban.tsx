@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Botao } from "@/components/ui/Botao";
 import { useAviso } from "@/components/ui/Aviso";
@@ -18,6 +18,13 @@ export function Kanban({ acoes, hoje }: { acoes: Acao[]; hoje: string }) {
   const [erro, setErro] = useState("");
   const [aberta, setAberta] = useState<string | null>(null);
   const [sobre, setSobre] = useState<Status | null>(null);
+  const [destino, setDestino] = useState<Record<string, Status>>({});
+  const focar = useRef<string | null>(null);
+  useEffect(() => { // depois de mover pelo menu, o foco acompanha o cartão na nova coluna
+    if (!focar.current) return;
+    document.getElementById(`mover-${focar.current}`)?.focus();
+    focar.current = null;
+  });
   const aviso = useAviso();
   const router = useRouter();
 
@@ -50,7 +57,7 @@ export function Kanban({ acoes, hoje }: { acoes: Acao[]; hoje: string }) {
               <h2 id={`k-${col.valor}`} className="px-1 font-display text-lg font-bold text-tinta">{col.nome} <span className="text-ouro-texto">({itens.length})</span></h2>
               <ul className="flex flex-col gap-2">
                 {itens.map((a) => (
-                  <li key={a.id} draggable onDragStart={(e) => { e.dataTransfer.setData("text/plain", a.id); e.dataTransfer.effectAllowed = "move"; }}
+                  <li key={a.id} draggable={aberta !== a.id} onDragStart={(e) => { e.dataTransfer.setData("text/plain", a.id); e.dataTransfer.effectAllowed = "move"; }}
                     className="flex cursor-grab flex-col gap-2 rounded-cartao border border-linha bg-white p-3 active:cursor-grabbing">
                     <p className={a.status === "concluido" ? "text-sec line-through" : "font-bold text-tinta"}>{a.titulo}</p>
                     <p className="flex flex-wrap items-center gap-1.5 text-[0.82rem] text-sec">
@@ -60,9 +67,13 @@ export function Kanban({ acoes, hoje }: { acoes: Acao[]; hoje: string }) {
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5"><SeloPrioridade p={a.prioridade} /><SeloAtraso acao={a} hoje={hoje} /></div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <select aria-label={`Mover "${a.titulo}" para`} value={a.status} onChange={(e) => mover(a.id, e.target.value as Status)} className="campo min-h-[38px] w-auto py-1 text-[0.85rem]">
+                      {/* Trocar a opção não move (no Windows as setas disparam "change"); o botão confirma. */}
+                      <select id={`mover-${a.id}`} aria-label={`Mover "${a.titulo}" para`} value={destino[a.id] ?? a.status}
+                        onChange={(e) => setDestino((d) => ({ ...d, [a.id]: e.target.value as Status }))} className="campo min-h-[38px] w-auto py-1 text-[0.85rem]">
                         {STATUS_LISTA.map((s) => <option key={s.valor} value={s.valor}>{s.nome}</option>)}
                       </select>
+                      <Botao tamanho="mini" aria-label={`Mover "${a.titulo}"`} disabled={(destino[a.id] ?? a.status) === a.status}
+                        onClick={() => { const s = destino[a.id]; setDestino((d) => { const n = { ...d }; delete n[a.id]; return n; }); focar.current = a.id; if (s) mover(a.id, s); }}>Mover</Botao>
                       <Botao tamanho="mini" variante="secundario" aria-expanded={aberta === a.id} aria-label={`Editar: ${a.titulo}`} onClick={() => setAberta(aberta === a.id ? null : a.id)}>Editar</Botao>
                     </div>
                     {aberta === a.id && <EditarAcao acao={a} onFechar={() => setAberta(null)} />}

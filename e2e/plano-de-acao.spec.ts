@@ -117,6 +117,7 @@ test.describe("plano de ação", () => {
     await criarAcoes(page);
     await page.goto("/plano-de-acao?visao=kanban");
     await page.getByLabel('Mover "Gravar vídeo" para').selectOption("concluido");
+    await page.getByRole("button", { name: 'Mover "Gravar vídeo"' }).click();
     await expect(page.getByRole("region", { name: /Concluída/ })).toContainText("Gravar vídeo");
     await page.reload();
     await expect(page.getByRole("region", { name: /Concluída/ })).toContainText("Gravar vídeo");
@@ -137,6 +138,11 @@ test.describe("plano de ação", () => {
     await expect(page.getByRole("heading", { name: "Fevereiro de 2027" })).toBeVisible();
     await expect(page.getByRole("gridcell", { name: /10 de fevereiro/ })).toContainText("Gravar vídeo");
     await expect(page.getByRole("region", { name: /Sem prazo/ })).toContainText("Reunião com contador");
+    await page.getByRole("gridcell", { name: /10 de fevereiro/ }).getByRole("button", { name: "Gravar vídeo" }).click();
+    const form = page.getByRole("form", { name: "Editar ação: Gravar vídeo" });
+    await expect(form).toBeVisible();
+    await expect(page.getByRole("gridcell").getByRole("form")).toHaveCount(0); // a edição abre fora da grade
+    expect((await form.boundingBox())!.width).toBeGreaterThan(500);
     await page.getByRole("link", { name: "Próximo" }).click();
     await expect(page.getByRole("heading", { name: "Março de 2027" })).toBeVisible();
 
@@ -155,6 +161,20 @@ test.describe("plano de ação", () => {
     await page.goto("/plano-de-acao?visao=calendario&data=2027-01-01");
     await expect(page.getByRole("heading", { name: "Janeiro de 2027" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  });
+
+  test("editar-concluida-mantem-data", async ({ page }) => {
+    await criarConta(page);
+    await criarAcoes(page);
+    await page.goto("/plano-de-acao?visao=kanban");
+    await page.getByLabel('Mover "Gravar vídeo" para').selectOption("concluido");
+    await page.getByRole("button", { name: 'Mover "Gravar vídeo"' }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Ação concluída." })).toBeVisible();
+    await page.goto("/plano-de-acao?concluidas=1");
+    await linhas(page).filter({ hasText: "Gravar vídeo" }).getByRole("button", { name: "Editar: Gravar vídeo" }).click();
+    await page.getByRole("form", { name: "Editar ação: Gravar vídeo" }).getByLabel("Responsável").fill("Ana");
+    await page.getByRole("button", { name: "Salvar ação" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Ação salva." })).toBeVisible();
   });
 
   test("sem-acoes", async ({ page }) => {

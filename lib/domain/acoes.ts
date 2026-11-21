@@ -27,7 +27,7 @@ export const VISOES_ACOES: { valor: VisaoAcoes; nome: string }[] = [
 
 const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const de = <T extends string>(v: string, ok: readonly T[], padrao: T): T => (ok.includes(v as T) ? (v as T) : padrao);
-export const dataValida = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+export const dataValida = (d: string) => /^(20\d{2}|2100)-\d{2}-\d{2}$/.test(d) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
 
 export function lerFiltrosAcoes(q: Record<string, string | string[] | undefined>, slugs: string[]): FiltrosAcoes {
   const cat = um(q.categoria), tri = Number(um(q.trimestre)), data = um(q.data);
@@ -128,3 +128,14 @@ export function urlAcoes(f: FiltrosAcoes, mudar: Partial<FiltrosAcoes> = {}): st
   const s = p.toString();
   return `/plano-de-acao${s ? `?${s}` : ""}`;
 }
+
+/** Data de conclusão: só muda quando o status realmente muda (editar uma ação concluída não reescreve a data). */
+export function conclusao(atual: Status, novo: Status, agora: string): { concluido_em?: string | null } {
+  if (atual === novo) return {};
+  if (novo === "concluido") return { concluido_em: agora };
+  if (atual === "concluido") return { concluido_em: null };
+  return {};
+}
+/** Sentido do link de um cabeçalho: alterna se já ordena por ele; prioridade começa pela mais alta. */
+export const proximoSentido = (f: FiltrosAcoes, o: Ordem): "asc" | "desc" =>
+  f.ordem === o ? (f.sentido === "asc" ? "desc" : "asc") : o === "prioridade" ? "desc" : "asc";
