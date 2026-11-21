@@ -84,7 +84,7 @@ export function Fechamento({ inicial }: { inicial: F }) {
             <div key={c.slug} className="grid grid-cols-[1fr_2.5em] items-center gap-x-3 sm:grid-cols-[minmax(160px,240px)_1fr_2.5em]">
               <span className="col-span-2 sm:col-span-1">{c.nome}</span>
               <input type="range" min={0} max={10} step={1} aria-label={`Nota para ${c.nome}`} value={f.notas[c.slug] ?? 5}
-                onChange={(e) => setF((x) => ({ ...x, notas: { ...x.notas, [c.slug]: Number(e.target.value) } }))} className="w-full accent-ouro-texto" />
+                onChange={(e) => setF((x) => ({ ...x, notas: { ...x.notas, [c.slug]: Number(e.target.value) } }))} className="h-11 w-full accent-ouro-texto" />
               <output data-testid={`nota-${c.slug}`} className="text-right font-display text-lg font-bold text-ouro-texto">{f.notas[c.slug] ?? "–"}</output>
             </div>
           ))}

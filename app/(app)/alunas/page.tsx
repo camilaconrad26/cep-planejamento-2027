@@ -20,7 +20,7 @@ export default async function Alunas() {
       <FaixaTitulo olho="Mentoria" titulo="Alunas" descricao="Progresso de cada aluna. Os planos abrem só para leitura." />
       <Corpo>
         {alunas.length === 0 ? <p className="text-sec">Nenhuma aluna cadastrada ainda.</p> : (
-          <div role="region" aria-label="Lista de alunas" tabIndex={0} className="overflow-x-auto rounded-cartao border border-linha bg-white">
+          <div role="region" aria-label="Lista de alunas" tabIndex={0} className="relative overflow-x-auto rounded-cartao border border-linha bg-white">
             <table className="w-full min-w-[46rem] border-collapse text-[0.93rem]">
               <thead className="bg-papel-2"><tr><th className={th}>Aluna</th><th className={th}>Perfil</th><th className={th}>Diagnóstico</th><th className={th}>Ações concluídas</th><th className={th}>Média dos KRs</th><th className={th}>Última alteração</th></tr></thead>
               <tbody>{alunas.map((a) => (
