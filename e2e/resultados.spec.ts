@@ -72,6 +72,19 @@ test.describe("resultados", () => {
     await expect(page.getByRole("article", { name: "Taxa de conversão" })).toHaveCount(0);
   });
 
+  test("grafico-trimestral", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await criarConta(page);
+    await page.goto("/metas");
+    await page.getByLabel("1º trimestre · Meta").fill("300.000");
+    await page.getByLabel("Realizado no 1º trimestre").fill("150.000");
+    await page.getByLabel("Realizado no 2º trimestre").click();
+    await expect(page.getByRole("img", { name: /1º tri — realizado: R\$\s150\.000/ })).toBeVisible();
+    await expect(page.getByRole("img", { name: /1º tri — meta: R\$\s300\.000/ })).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  });
+
   test("sem-objetivo-avisa", async ({ page }) => {
     await criarConta(page);
     await page.goto("/metas?aba=okrs");

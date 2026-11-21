@@ -7,6 +7,7 @@ import { CampoMoeda } from "@/components/ui/CampoMoeda";
 import { CampoNumero } from "@/components/ui/CampoNumero";
 import { Comparacao } from "@/components/metas/Comparacao";
 import { AcoesVenda } from "@/components/metas/AcoesVenda";
+import { GraficoTrimestres } from "@/components/resultados/GraficoTrimestres";
 import { salvarMetas } from "@/lib/data/metasAcoes";
 import { useGravacaoAutomatica } from "@/lib/useGravacaoAutomatica";
 import { formatarMoeda } from "@/lib/domain/moeda";
@@ -169,6 +170,7 @@ export function MetasFinanceiras({ inicial, base2026, acoes = [] }: { inicial: M
             </div>
           ))}
         </div>
+        <GraficoTrimestres dados={TRIS.map((t) => ({ t, meta: m.trimestres[t].meta, realizado: m.realizado[t] }))} />
       </Cartao>
 
       <AcoesVenda inicial={acoes} metaTrimestre={(t) => m.trimestres[t as 1 | 2 | 3 | 4]?.meta ?? 0} />
