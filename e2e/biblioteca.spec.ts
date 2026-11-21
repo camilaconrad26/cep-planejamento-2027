@@ -16,12 +16,36 @@ test.describe("biblioteca", () => {
   test("filtra-por-categoria-e-nivel", async ({ page }) => {
     await criarConta(page);
     await page.goto("/biblioteca");
-    await page.getByLabel("Categoria").selectOption("comercial");
-    await expect(page).toHaveURL(/categoria=comercial/);
-    await page.getByLabel("Nível").selectOption("tatico");
+    await page.getByLabel("Categoria", { exact: true }).selectOption("comercial");
+    await page.getByLabel("Nível", { exact: true }).selectOption("tatico");
+    await page.getByRole("button", { name: "Filtrar" }).click();
     await expect(page).toHaveURL(/categoria=comercial.*nivel=tatico|nivel=tatico.*categoria=comercial/);
     await expect(page.getByRole("heading", { level: 2 })).toHaveCount(1);
     await expect(page.getByRole("listitem").filter({ hasText: "Tático" })).toHaveCount(1);
+  });
+
+  test("trocar-filtro-pelo-teclado-nao-recarrega", async ({ page }) => {
+    await criarConta(page);
+    await page.goto("/biblioteca");
+    const cat = page.getByLabel("Categoria", { exact: true });
+    await cat.focus();
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.waitForTimeout(1500);
+    await expect(page).not.toHaveURL(/categoria=/);
+    await expect(cat).toBeFocused();
+    await page.getByRole("button", { name: "Filtrar" }).click();
+    await expect(page).toHaveURL(/categoria=/);
+  });
+
+  test("kpi-sem-trimestre", async ({ page }) => {
+    await criarConta(page);
+    await page.goto("/biblioteca?perfil=1&categoria=comercial&nivel=kpi");
+    const item = page.getByRole("listitem").filter({ hasText: "KPI" });
+    await expect(item.getByLabel(/^Trimestre para:/)).toHaveCount(0);
+    await item.getByRole("button", { name: "Adicionar ao meu plano" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Indicador adicionado ao seu plano." })).toBeVisible();
+    await expect(item.getByText("No seu plano")).toBeVisible();
   });
 
   test("filtro-invalido-nao-quebra", async ({ page }) => {

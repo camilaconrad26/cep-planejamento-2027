@@ -46,7 +46,7 @@ export default async function Biblioteca({ searchParams }: { searchParams: Promi
                 <ItemCartao key={i.id} item={i}>
                   {noPlano.has(i.id)
                     ? <span className="inline-flex rounded-full border border-ouro-fio bg-papel-2 px-3 py-1 text-[0.84rem] font-bold text-ouro-texto">✓ No seu plano</span>
-                    : <Adicionar itemId={i.id} texto={i.texto} trimestrePadrao={trimestre} />}
+                    : <Adicionar itemId={i.id} texto={i.texto} trimestrePadrao={trimestre} semTrimestre={i.nivel === "kpi"} />}
                 </ItemCartao>
               ))}
             </ul>

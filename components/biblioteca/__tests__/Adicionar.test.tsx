@@ -30,3 +30,10 @@ it("mostra-erro-no-item", async () => {
   expect(screen.getByRole("alert")).toHaveTextContent("Não foi possível adicionar. Tente de novo.");
   expect(screen.getByRole("button", { name: "Adicionar ao meu plano" })).toBeEnabled();
 });
+
+it("kpi-sem-escolha-de-trimestre", () => {
+  render(<ProvedorAviso><Adicionar itemId="k1" texto="Taxa de conversão" trimestrePadrao={3} semTrimestre /></ProvedorAviso>);
+  expect(screen.queryByLabelText("Trimestre para: Taxa de conversão")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Adicionar ao meu plano" }));
+  expect(adicionar).toHaveBeenCalledWith("k1", 3);
+});

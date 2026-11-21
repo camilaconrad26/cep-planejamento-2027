@@ -43,6 +43,8 @@ export function agruparPorCategoria(itens: ItemBiblioteca[], categorias: Categor
 
 export function textoAdicionado(r: ResultadoAdicao, trimestre: 1 | 2 | 3 | 4): string {
   if (r.ja_no_plano) return "Este item já está no seu plano.";
+  const junto = r.objetivo_criado ? " O objetivo estratégico da categoria entrou junto." : "";
   if (r.criado === "objetivo") return `Objetivo adicionado ao ${trimestre}º trimestre.`;
-  return `Adicionado ao ${trimestre}º trimestre.${r.objetivo_criado ? " O objetivo estratégico da categoria entrou junto." : ""}`;
+  if (r.criado === "kpi") return `Indicador adicionado ao seu plano.${junto}`;
+  return `Adicionado ao ${trimestre}º trimestre.${junto}`;
 }

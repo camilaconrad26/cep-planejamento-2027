@@ -42,6 +42,9 @@ describe("textoAdicionado", () => {
     expect(textoAdicionado({ criado: "tarefa", objetivo_criado: false, ja_no_plano: true }, 1)).toBe("Este item já está no seu plano."));
   test("objetivo", () =>
     expect(textoAdicionado({ criado: "objetivo", objetivo_criado: true, ja_no_plano: false }, 3)).toBe("Objetivo adicionado ao 3º trimestre."));
-  test("tarefa sem objetivo novo", () =>
-    expect(textoAdicionado({ criado: "kpi", objetivo_criado: false, ja_no_plano: false }, 4)).toBe("Adicionado ao 4º trimestre."));
+  test("KR sem objetivo novo", () =>
+    expect(textoAdicionado({ criado: "kr", objetivo_criado: false, ja_no_plano: false }, 4)).toBe("Adicionado ao 4º trimestre."));
+  test("KPI não tem trimestre", () =>
+    expect(textoAdicionado({ criado: "kpi", objetivo_criado: true, ja_no_plano: false }, 4))
+      .toBe("Indicador adicionado ao seu plano. O objetivo estratégico da categoria entrou junto."));
 });

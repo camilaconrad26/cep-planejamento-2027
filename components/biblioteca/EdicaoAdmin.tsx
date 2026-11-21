@@ -49,7 +49,7 @@ export function EditarItem({ item }: { item: ItemBiblioteca }) {
   const [texto, setTexto] = useState(item.texto);
   const { enviando, erro, rodar } = useAcao();
   return (
-    <li className={`flex flex-col gap-2 border-t border-linha py-4 first:border-t-0 ${item.ativo ? "" : "opacity-75"}`}>
+    <li data-id={item.id} className={`flex flex-col gap-2 border-t border-linha py-4 first:border-t-0 ${item.ativo ? "" : "opacity-75"}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">{nomeNivel(item.nivel)}</span>
         {!item.ativo && <span className="rounded-full border border-alerta px-2.5 py-0.5 text-[0.78rem] font-bold text-alerta">Inativo</span>}
