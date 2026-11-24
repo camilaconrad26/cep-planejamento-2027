@@ -3,7 +3,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 // Quem chama é o servidor do app (sem Origin). Navegadores só de páginas do próprio app.
-const ORIGENS = ["https://cep-planejamento-v2.vercel.app", "https://cep-planejamento-2027.vercel.app"];
+const ORIGENS = ["https://planejamento.protecaofamiliaempresa.com", "https://cep-planejamento-v2.vercel.app", "https://cep-planejamento-2027.vercel.app"];
 const corsDe = (origem: string | null) => ({
   ...(origem && ORIGENS.includes(origem) ? { "Access-Control-Allow-Origin": origem, Vary: "Origin" } : {}),
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, x-cep-visitante",
@@ -57,6 +57,38 @@ Deno.serve(async (req: Request) => {
     if (error || !data.user) {
       const ja = /already|registered|exists/i.test(error?.message ?? "");
       return resp(ja ? 409 : 400, { erro: ja ? 'Este e-mail já tem cadastro. Use "Entrar".' : "Não foi possível criar a conta." });
+    }
+    const { error: e2 } = await admin.rpc("cep_iniciar_conta", { p_user: data.user.id, p_nome: nome, p_email: email });
+    if (e2) {
+      await admin.auth.admin.deleteUser(data.user.id);
+      return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });
+    }
+    return resp(200, { ok: true });
+  }
+
+  if (b.acao === "criar_aluna") {
+    // A mentora cadastra a aluna com senha provisória (sem limite de tentativas: só quem é mentora chega aqui).
+    const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    const { data: quem } = token ? await admin.auth.getUser(token) : { data: { user: null } };
+    if (!quem?.user) return resp(401, { erro: "Sessão expirada. Entre de novo." });
+    const { data: m, error: eM } = await admin.from("cep_roles").select("user_id").eq("user_id", quem.user.id).eq("papel", "mentora").maybeSingle();
+    if (eM) return resp(500, { erro: "Não foi possível verificar a permissão. Tente de novo." });
+    if (!m) return resp(403, { erro: "Apenas a mentora pode cadastrar alunas." });
+    const nome = String(b.nome ?? "").trim().slice(0, 120);
+    const email = String(b.email ?? "").trim().toLowerCase();
+    const senha = String(b.senha ?? "");
+    if (nome.length < 3) return resp(400, { erro: "Informe o nome completo da aluna." });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return resp(400, { erro: "Informe um e-mail válido." });
+    if (senha.length < 8 || senha.length > 72) return resp(400, { erro: "A senha precisa ter de 8 a 72 caracteres." });
+    for (const t of TABELAS_EQUIPE) {
+      const { data, error } = await admin.from(t).select("email").ilike("email", email.replace(/[\\%_]/g, "\\$&")).limit(1);
+      if (error) return resp(500, { erro: "Não foi possível criar a conta. Tente de novo." });
+      if (data.length) return resp(409, { erro: "Este e-mail já tem cadastro." });
+    }
+    const { data, error } = await admin.auth.admin.createUser({ email, password: senha, email_confirm: true, user_metadata: { nome }, app_metadata: { origem: "cep", criada_por: quem.user.id } });
+    if (error || !data.user) {
+      const ja = /already|registered|exists/i.test(error?.message ?? "");
+      return resp(ja ? 409 : 400, { erro: ja ? "Este e-mail já tem cadastro. Se a aluna esqueceu a senha, abra o plano dela e defina uma senha provisória." : "Não foi possível criar a conta." });
     }
     const { error: e2 } = await admin.rpc("cep_iniciar_conta", { p_user: data.user.id, p_nome: nome, p_email: email });
     if (e2) {

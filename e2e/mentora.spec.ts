@@ -50,4 +50,31 @@ test.describe("mentora", () => {
     await entrar(p2, aluna.email, "Provisoria#2027");
     await outra.close();
   });
+
+  test("cadastra-aluna-com-senha-provisoria", async ({ page, browser }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await entrar(page, EMAIL!, SENHA!);
+    await page.goto("/alunas");
+    await page.getByRole("button", { name: "Cadastrar aluna" }).click();
+    const nome = `Aluna Cadastrada ${Date.now()}`, email = `e2e-cadastrada-${Date.now()}@example.com`;
+    await page.getByLabel("Nome completo da aluna").fill(nome);
+    await page.getByLabel("E-mail da aluna").fill(email);
+    await page.getByLabel("Senha provisória").fill("Provisoria#2027");
+    await page.getByRole("button", { name: "Criar conta da aluna" }).click();
+    await expect(page.getByRole("status").filter({ hasText: `Conta de ${nome} criada.` })).toBeVisible();
+    await expect(page.getByRole("link", { name: `Abrir o plano de ${nome}` })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
+    // mesmo e-mail de novo: avisa, não duplica
+    await page.getByLabel("Nome completo da aluna").fill(nome);
+    await page.getByLabel("E-mail da aluna").fill(email);
+    await page.getByLabel("Senha provisória").fill("Provisoria#2027");
+    await page.getByRole("button", { name: "Criar conta da aluna" }).click();
+    await expect(page.getByRole("form", { name: "Cadastrar aluna" }).getByRole("alert")).toContainText("Este e-mail já tem cadastro");
+    // a aluna entra com a senha provisória e cai na própria Visão geral
+    const outra = await browser.newContext();
+    const p2 = await outra.newPage();
+    await entrar(p2, email, "Provisoria#2027");
+    await expect(p2.getByRole("navigation", { name: "Menu principal" }).getByRole("link", { name: "Alunas" })).toHaveCount(0);
+    await outra.close();
+  });
 });
