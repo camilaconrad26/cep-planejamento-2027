@@ -104,7 +104,7 @@ export function ObjetivoCartao({ o, trimestrePadrao }: { o: NoObjetivo; trimestr
       <Lista titulo="Sem trimestre" itens={o.semTrimestre} />
       {o.okrs.map((k) => (
         <div key={k.id}>
-          <h4 className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">OKR · {nomeTri(k.trimestre)}</h4>
+          <h4 className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">Meta do trimestre · {nomeTri(k.trimestre)}</h4>
           <ul className="mt-1 flex flex-col gap-1">{k.krs.map((r) => (
             <li key={r.id} className="text-tinta">{r.descricao}{r.alvo === null && <span className="ml-2 text-[0.84rem] text-sec">(sem meta numérica)</span>}</li>
           ))}</ul>
@@ -112,7 +112,7 @@ export function ObjetivoCartao({ o, trimestrePadrao }: { o: NoObjetivo; trimestr
       ))}
       {o.kpis.length > 0 && (
         <div>
-          <h4 className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">KPI</h4>
+          <h4 className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">Indicadores</h4>
           <ul className="mt-1 flex flex-col gap-1">{o.kpis.map((k) => <li key={k.id} className="text-tinta">{k.nome}</li>)}</ul>
         </div>
       )}

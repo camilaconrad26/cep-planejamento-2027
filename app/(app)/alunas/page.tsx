@@ -24,7 +24,7 @@ export default async function Alunas() {
         {alunas.length === 0 ? <p className="text-sec">Nenhuma aluna cadastrada ainda.</p> : (
           <div role="region" aria-label="Lista de alunas" tabIndex={0} className="relative overflow-x-auto rounded-cartao border border-linha bg-white">
             <table className="w-full min-w-[46rem] border-collapse text-[0.93rem]">
-              <thead className="bg-papel-2"><tr><th className={th}>Aluna</th><th className={th}>Perfil</th><th className={th}>Diagnóstico</th><th className={th}>Ações concluídas</th><th className={th}>Média dos KRs</th><th className={th}>Última alteração</th></tr></thead>
+              <thead className="bg-papel-2"><tr><th className={th}>Aluna</th><th className={th}>Perfil</th><th className={th}>Diagnóstico</th><th className={th}>Ações concluídas</th><th className={th}>Resultados-chave</th><th className={th}>Última alteração</th></tr></thead>
               <tbody>{alunas.map((a) => (
                 <tr key={a.userId} className="border-t border-linha">
                   <td className="px-3 py-2.5"><Link href={`/alunas/${a.userId}`} aria-label={`Abrir o plano de ${a.nome}`} className="font-bold text-ouro-texto underline underline-offset-4">{a.nome}</Link>

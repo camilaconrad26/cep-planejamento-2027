@@ -2,7 +2,7 @@
 export type Nivel = "estrategico" | "tatico" | "operacional" | "okr" | "kpi";
 export const NIVEIS: { valor: Nivel; nome: string }[] = [
   { valor: "estrategico", nome: "Estratégico" }, { valor: "tatico", nome: "Tático" }, { valor: "operacional", nome: "Operacional" },
-  { valor: "okr", nome: "OKR" }, { valor: "kpi", nome: "KPI" },
+  { valor: "okr", nome: "Resultado-chave (OKR)" }, { valor: "kpi", nome: "Indicador (KPI)" },
 ];
 export const nomeNivel = (n: Nivel) => NIVEIS.find((x) => x.valor === n)?.nome ?? n;
 

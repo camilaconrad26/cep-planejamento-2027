@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export type Aba = "financeiro" | "okrs" | "kpis";
-const ABAS: [Aba, string][] = [["financeiro", "Financeiro"], ["okrs", "OKRs e resultados-chave"], ["kpis", "Indicadores (KPIs)"]];
+const ABAS: [Aba, string][] = [["financeiro", "Financeiro"], ["okrs", "Metas do trimestre (OKRs)"], ["kpis", "Indicadores (KPIs)"]];
 export const lerAba = (v: unknown): Aba => (v === "okrs" || v === "kpis" ? v : "financeiro");
 
 export function AbasMetas({ atual }: { atual: Aba }) {

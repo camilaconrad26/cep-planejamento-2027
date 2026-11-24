@@ -29,25 +29,25 @@ const pronto = (ok: string): R => { revalidar(); return { ok }; };
 export async function criarOkr(d: { objetivoId: string; titulo: string; trimestre: number | null }): Promise<R> {
   const c = await ctx(); if (!c) return { erro: "sessao" };
   const titulo = txt(d.titulo, 1000);
-  if (!titulo) return { erro: "Escreva o OKR." };
+  if (!titulo) return { erro: "Escreva a meta do trimestre." };
   if (!triOk(d.trimestre)) return { erro: "Escolha o trimestre." };
   const { data: obj } = await c.sb.from("cep_objectives").select("cycle_id").eq("id", d.objetivoId).eq("org_id", c.s.orgId).maybeSingle();
   if (!obj) return { erro: "Escolha o objetivo." };
   const { error } = await c.sb.from("cep_okrs").insert({ org_id: c.s.orgId, cycle_id: obj.cycle_id, objective_id: d.objetivoId, titulo, trimestre: d.trimestre });
-  return error ? { erro: FALHA } : pronto("OKR criado.");
+  return error ? { erro: FALHA } : pronto("Meta criada. Agora diga como vai medir: acrescente os resultados-chave.");
 }
 export async function editarOkr(id: string, d: { titulo: string; trimestre: number | null }): Promise<R> {
   const c = await ctx(); if (!c) return { erro: "sessao" };
   const titulo = txt(d.titulo, 1000);
-  if (!titulo) return { erro: "O OKR não pode ficar vazio." };
+  if (!titulo) return { erro: "A meta não pode ficar vazia." };
   if (!triOk(d.trimestre)) return { erro: "Escolha o trimestre." };
   const { data, error } = await c.sb.from("cep_okrs").update({ titulo, trimestre: d.trimestre }).eq("id", id).eq("org_id", c.s.orgId).select("id");
-  return error || !data?.length ? { erro: FALHA } : pronto("OKR salvo.");
+  return error || !data?.length ? { erro: FALHA } : pronto("Meta salva.");
 }
 export async function excluirOkr(id: string): Promise<R> {
   const c = await ctx(); if (!c) return { erro: "sessao" };
   const { data, error } = await c.sb.from("cep_okrs").delete().eq("id", id).eq("org_id", c.s.orgId).select("id");
-  return error || !data?.length ? { erro: "Não foi possível excluir. Tente de novo." } : pronto("OKR excluído.");
+  return error || !data?.length ? { erro: "Não foi possível excluir. Tente de novo." } : pronto("Meta excluída.");
 }
 
 type CamposKr = { descricao: string; unidade: string; inicial: number | null; alvo: number | null; atual: number | null; prazo: string | null };
@@ -78,7 +78,7 @@ export async function lancarValorKr(id: string, atual: number | null): Promise<R
   const c = await ctx(); if (!c) return { erro: "sessao" };
   const v = num(atual); if (v === undefined) return { erro: "Use só números." };
   const { data, error } = await c.sb.from("cep_key_results").update({ valor_atual: v }).eq("id", id).eq("org_id", c.s.orgId).select("id");
-  return error || !data?.length ? { erro: FALHA } : pronto("Valor lançado.");
+  return error || !data?.length ? { erro: FALHA } : pronto("Número atualizado.");
 }
 export async function excluirKr(id: string): Promise<R> {
   const c = await ctx(); if (!c) return { erro: "sessao" };

@@ -49,7 +49,7 @@ export function compararRetratos(atual: RetratoRevisao, anterior: RetratoRevisao
   return [
     { campo: "Execução das ações", tipo: "pct", antes: a ? a.execucao.pct : null, depois: atual.execucao.pct },
     { campo: "Média dos resultados-chave", tipo: "pct", antes: a ? a.krs.media : null, depois: atual.krs.media },
-    { campo: "KPIs na meta", tipo: "numero", antes: a ? a.kpis.naMeta : null, depois: atual.kpis.naMeta },
+    { campo: "Indicadores na meta", tipo: "numero", antes: a ? a.kpis.naMeta : null, depois: atual.kpis.naMeta },
     { campo: "Faturamento realizado", tipo: "moeda", antes: a ? a.faturamento.realizado : null, depois: atual.faturamento.realizado },
   ];
 }

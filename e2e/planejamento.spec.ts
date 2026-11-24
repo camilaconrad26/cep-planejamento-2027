@@ -29,7 +29,7 @@ test.describe("planejamento", () => {
     await expect(prio.getByText("4 de 3")).toBeVisible();
     await expect(prio.getByText("Acima do recomendado")).toBeVisible();
     await page.goto("/visao-geral");
-    await expect(page.getByText("Escolha as prioridades do 1º trimestre")).toHaveCount(0);
+    await expect(page.getByText("Onde você quer focar no 1º trimestre?")).toHaveCount(0);
   });
 
   test("objetivo-e-acoes", async ({ page }) => {
