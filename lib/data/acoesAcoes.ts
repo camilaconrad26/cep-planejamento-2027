@@ -4,6 +4,7 @@ import { criarClienteServidor } from "@/lib/data/supabase/servidor";
 import { obterSessao } from "@/lib/data/sessao";
 import { conclusao, dataValida, type Prioridade } from "@/lib/domain/acoes";
 import type { Status } from "@/lib/domain/ciclo";
+import { mensagemConclusao } from "@/lib/domain/voz";
 import type { Database } from "@/lib/data/tipos";
 
 type Upd = Database["public"]["Tables"]["cep_tasks"]["Update"];
@@ -45,8 +46,12 @@ export async function atualizarAcao(id: string, p: CamposAcao): Promise<{ ok?: s
     const fim = ("prazo" in upd ? upd.prazo : atual.prazo) as string | null;
     if (ini && fim && fim < ini) return { erro: "O prazo não pode ser antes do início." };
   }
-  const { data, error } = await sb.from("cep_tasks").update(upd).eq("id", id).eq("org_id", s.orgId).select("id");
+  const { data, error } = await sb.from("cep_tasks").update(upd).eq("id", id).eq("org_id", s.orgId).select("id, cycle_id");
   if (error || !data?.length) return { erro: FALHA };
   revalidatePath("/plano-de-acao"); revalidatePath("/visao-geral"); revalidatePath("/planejamento");
-  return { ok: concluiu ? "Ação concluída." : "Ação salva." };
+  if (!concluiu) return { ok: "Ação salva." };
+  // Comemora com o progresso real: quantas ações já foram concluídas neste ciclo.
+  const { count } = await sb.from("cep_tasks").select("id", { count: "exact", head: true })
+    .eq("cycle_id", data[0].cycle_id).eq("status", "concluido").eq("arquivado", false);
+  return { ok: mensagemConclusao(count ?? 0) };
 }

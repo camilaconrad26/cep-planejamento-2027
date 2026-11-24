@@ -25,17 +25,17 @@ function NovoOkr({ objetivos }: { objetivos: Objetivo[] }) {
     const r = await rodar(() => criarOkr({ objetivoId: obj, titulo, trimestre: tri }));
     if (r?.ok) { setTitulo(""); setAberto(false); }
   }
-  if (!aberto) return <div><Botao onClick={() => setAberto(true)}>Novo OKR</Botao></div>;
+  if (!aberto) return <div><Botao onClick={() => setAberto(true)}>Nova meta do trimestre</Botao></div>;
   return (
     <form onSubmit={enviar} className="flex flex-col gap-3 rounded-cartao border border-ouro-fio bg-papel-2 p-4">
       <label className="flex flex-col gap-1.5 text-[0.9rem] font-bold text-tinta">Objetivo
-        <select aria-label="Objetivo do OKR" value={obj} onChange={(e) => setObj(e.target.value)} className="campo font-normal">
+        <select aria-label="Objetivo da meta" value={obj} onChange={(e) => setObj(e.target.value)} className="campo font-normal">
           {objetivos.map((o) => <option key={o.id} value={o.id}>{o.titulo} ({o.categoria})</option>)}</select></label>
-      <label htmlFor={`${id}-t`} className="flex flex-col gap-1.5 text-[0.9rem] font-bold text-tinta">OKR
+      <label htmlFor={`${id}-t`} className="flex flex-col gap-1.5 text-[0.9rem] font-bold text-tinta">Meta do trimestre
         <input id={`${id}-t`} value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={1000} required autoFocus className="campo font-normal" placeholder="Ex.: ganhar tração comercial" /></label>
-      <SeletorTrimestre id={`${id}-q`} rotulo="Trimestre do OKR" valor={tri} onChange={setTri} />
+      <SeletorTrimestre id={`${id}-q`} rotulo="Trimestre da meta" valor={tri} onChange={setTri} />
       <div className="flex flex-wrap gap-2">
-        <Botao type="submit" tamanho="mini" disabled={enviando || !titulo.trim() || !obj}>Criar OKR</Botao>
+        <Botao type="submit" tamanho="mini" disabled={enviando || !titulo.trim() || !obj}>Criar meta</Botao>
         <Botao tamanho="mini" variante="secundario" onClick={() => setAberto(false)}>Cancelar</Botao>
       </div>
       <Erro t={erro} />
@@ -56,27 +56,27 @@ function OkrCartao({ okr, krs }: { okr: Okr; krs: KR[] }) {
       {editando ? (
         <div className="flex flex-col gap-2">
           <h4 id={`${id}-h`} className="sr-only">{okr.titulo}</h4>
-          <label htmlFor={`${id}-t`} className="text-[0.9rem] font-bold text-tinta">OKR</label>
+          <label htmlFor={`${id}-t`} className="text-[0.9rem] font-bold text-tinta">Meta do trimestre</label>
           <input id={`${id}-t`} value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={1000} className="campo" />
-          <SeletorTrimestre id={`${id}-q`} rotulo="Trimestre do OKR" valor={tri} onChange={setTri} />
+          <SeletorTrimestre id={`${id}-q`} rotulo="Trimestre da meta" valor={tri} onChange={setTri} />
           <div className="flex flex-wrap gap-2">
-            <Botao tamanho="mini" disabled={enviando || !titulo.trim()} onClick={async () => { const r = await rodar(() => editarOkr(okr.id, { titulo, trimestre: tri })); if (r?.ok) setEditando(false); }}>Salvar OKR</Botao>
+            <Botao tamanho="mini" disabled={enviando || !titulo.trim()} onClick={async () => { const r = await rodar(() => editarOkr(okr.id, { titulo, trimestre: tri })); if (r?.ok) setEditando(false); }}>Salvar meta</Botao>
             <Botao tamanho="mini" variante="secundario" onClick={() => setEditando(false)}>Cancelar</Botao>
           </div>
         </div>
       ) : (
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <div><span className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">OKR · {nomeTri(okr.trimestre)}</span>
+          <div><span className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">Meta do trimestre · {nomeTri(okr.trimestre)}</span>
             <h4 id={`${id}-h`} className="font-display text-[1.05rem] font-bold text-tinta">{okr.titulo}</h4></div>
           <div className="flex flex-wrap gap-2">
-            <Botao tamanho="mini" variante="secundario" aria-label={`Editar OKR: ${okr.titulo}`} onClick={() => setEditando(true)}>Editar</Botao>
-            <Botao tamanho="mini" variante="secundario" aria-label={`Excluir OKR: ${okr.titulo}`} onClick={() => setExcluir(true)}>Excluir</Botao>
+            <Botao tamanho="mini" variante="secundario" aria-label={`Editar meta: ${okr.titulo}`} onClick={() => setEditando(true)}>Editar</Botao>
+            <Botao tamanho="mini" variante="secundario" aria-label={`Excluir meta: ${okr.titulo}`} onClick={() => setExcluir(true)}>Excluir</Botao>
           </div>
         </div>
       )}
       {excluir && (
         <div role="alertdialog" aria-labelledby={`${id}-x`} className="flex flex-col gap-2 rounded-cartao border border-alerta bg-white p-3">
-          <p id={`${id}-x`} className="font-bold text-tinta">{krs.length ? `Excluir este OKR e ${krs.length === 1 ? "o 1 resultado-chave" : `os ${krs.length} resultados-chave`}?` : "Excluir este OKR?"}</p>
+          <p id={`${id}-x`} className="font-bold text-tinta">{krs.length ? `Excluir esta meta e ${krs.length === 1 ? "o resultado-chave dela" : `os ${krs.length} resultados-chave dela`}?` : "Excluir esta meta?"}</p>
           <div className="flex flex-wrap gap-2">
             <Botao tamanho="mini" variante="perigo" disabled={enviando} onClick={() => rodar(() => excluirOkr(okr.id))}>Excluir de vez</Botao>
             <Botao tamanho="mini" variante="secundario" onClick={() => setExcluir(false)}>Cancelar</Botao>
@@ -94,7 +94,7 @@ function OkrCartao({ okr, krs }: { okr: Okr; krs: KR[] }) {
 export function Okrs({ objetivos, okrs, krs, execucao }: { objetivos: Objetivo[]; okrs: Okr[]; krs: KR[]; execucao: Record<string, number | null> }) {
   if (!objetivos.length) return (
     <p className="rounded-cartao border border-linha bg-white px-5 py-4 text-tinta">Crie um objetivo no{" "}
-      <Link href="/planejamento" className="font-bold text-ouro-texto underline underline-offset-4">Planejamento estratégico</Link> (ou adicione um pela biblioteca) para ligar OKRs a ele.</p>
+      <Link href="/planejamento" className="font-bold text-ouro-texto underline underline-offset-4">Planejamento estratégico</Link> (ou adicione um pela biblioteca) para ligar metas do trimestre a ele.</p>
   );
   return (
     <div className="flex flex-col gap-4">
@@ -108,11 +108,11 @@ export function Okrs({ objetivos, okrs, krs, execucao }: { objetivos: Objetivo[]
               <span className="text-[0.72rem] font-bold uppercase tracking-[.16em] text-ouro-texto">{o.categoria}</span>
               <h3 id={`obj-${o.id}`} className="font-display text-lg font-bold text-tinta">{o.titulo}</h3>
               <p className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-[0.9rem] text-sec">
-                <span>Execução das ações: {pct(execucao[o.id] ?? null)}</span>
-                <span>Resultado dos KRs: {pct(mediaKRs(seusKrs))}</span>
+                <span>Ações concluídas: {pct(execucao[o.id] ?? null)}</span>
+                <span>Resultados-chave alcançados: {pct(mediaKRs(seusKrs))}</span>
               </p>
             </div>
-            {seus.length === 0 ? <p className="text-sec">Nenhum OKR neste objetivo.</p> : seus.map((k) => <OkrCartao key={k.id} okr={k} krs={krs.filter((r) => r.okrId === k.id)} />)}
+            {seus.length === 0 ? <p className="text-sec">Ainda não há metas do trimestre neste objetivo.</p> : seus.map((k) => <OkrCartao key={k.id} okr={k} krs={krs.filter((r) => r.okrId === k.id)} />)}
           </section>
         );
       })}

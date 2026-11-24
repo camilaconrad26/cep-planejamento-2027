@@ -8,7 +8,7 @@ const base: Retrato = {
 it("primeiro acesso: começar pelo diagnóstico", () => {
   const p = proximoPasso({ ...base, diagnosticoIniciado: false, categoriasNoTrimestre: 0, fase: "planejamento" });
   expect(p.codigo).toBe("diagnostico");
-  expect(p.titulo).toBe("Comece pelo diagnóstico");
+  expect(p.titulo).toBe("Vamos começar pelo seu escritório");
   expect(p.href).toBe("/diagnostico");
 });
 it("sem categorias no trimestre: escolher prioridades", () =>
@@ -37,7 +37,7 @@ it("a ordem respeita a prioridade: diagnóstico antes de atraso", () =>
 it("diagnóstico começado e não concluído: continuar antes de qualquer outra coisa", () => {
   const p = proximoPasso({ ...base, diagnosticoConcluido: false, categoriasNoTrimestre: 0 });
   expect(p.codigo).toBe("diagnostico-continuar");
-  expect(p.titulo).toBe("Continue o diagnóstico");
+  expect(p.titulo).toBe("Falta pouco para terminar o diagnóstico");
   expect(p.href).toBe("/diagnostico");
 });
 
@@ -45,4 +45,12 @@ it("revisão leva ao trimestre que terminou", () => {
   const p = proximoPasso({ ...base, trimestre: 3, trimestreAnteriorSemRevisao: true });
   expect(p.codigo).toBe("revisao");
   expect(p.href).toBe("/revisao?t=2");
+});
+
+it("prioridade sem ação: fala as áreas como uma pessoa falaria", () => {
+  const um = proximoPasso({ ...base, categoriasSemAcao: ["Comercial"] });
+  expect(um.texto).toBe("Você escolheu “Comercial” como prioridade, mas ainda não tem nenhuma ação nela. A biblioteca tem sugestões prontas para começar.");
+  const dois = proximoPasso({ ...base, categoriasSemAcao: ["Comercial", "Financeiro e Precificação"] });
+  expect(dois.texto).toContain("“Comercial” e “Financeiro e Precificação” como prioridades");
+  expect(dois.texto).toContain("nenhuma ação nelas");
 });

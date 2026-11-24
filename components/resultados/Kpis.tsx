@@ -125,7 +125,7 @@ export function Kpis({ kpis, medicoes, objetivos, hoje }: { kpis: KPI[]; medicoe
   return (
     <div className="flex flex-col gap-4">
       {novo ? <FormKpi objetivos={objetivos} onFechar={() => setNovo(false)} /> : <div><Botao onClick={() => setNovo(true)}>Novo indicador</Botao></div>}
-      {kpis.length === 0 && <p className="text-sec">Nenhum indicador ainda. Crie um ou adicione os KPIs sugeridos pela biblioteca.</p>}
+      {kpis.length === 0 && <p className="text-sec">Você ainda não acompanha nenhum indicador. Crie o seu ou use as sugestões da biblioteca.</p>}
       {kpis.map((k) => <KpiCartao key={`${k.id}-${k.nome}-${k.meta}-${k.sentido}`} kpi={k} medicoes={medicoes[k.id] ?? []} objetivos={objetivos} hoje={hoje} />)}
     </div>
   );

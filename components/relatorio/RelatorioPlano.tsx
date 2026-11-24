@@ -89,7 +89,7 @@ export async function RelatorioPlano({ orgId, userId, titulo = "h1" }: { orgId: 
         {rev.revisoes.filter((r) => r.concluidaEm).length === 0 && <p className="text-sec">Nenhuma revisão concluída.</p>}
         {rev.revisoes.filter((r) => r.concluidaEm).sort((a, b) => a.trimestre - b.trimestre).map((r) => (
           <div key={r.trimestre} className="mt-2 break-inside-avoid">
-            <h3 className="font-bold">{r.trimestre}º trimestre — execução {pct(r.retrato?.execucao.pct ?? null)}, média dos KRs {pct(r.retrato?.krs.media ?? null)}</h3>
+            <h3 className="font-bold">{r.trimestre}º trimestre — execução {pct(r.retrato?.execucao.pct ?? null)}, resultados-chave {pct(r.retrato?.krs.media ?? null)}</h3>
             <dl>{PERGUNTAS_REVISAO.filter((p) => r.respostas[p.chave]).map((p) => <div key={p.chave}><dt className="font-bold text-ouro-texto">{p.texto}</dt><dd className="whitespace-pre-line">{r.respostas[p.chave]}</dd></div>)}</dl>
           </div>
         ))}

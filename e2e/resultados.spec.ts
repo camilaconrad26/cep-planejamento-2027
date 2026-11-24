@@ -16,12 +16,12 @@ test.describe("resultados", () => {
     await criarConta(page);
     await criarObjetivo(page);
     await page.goto("/metas");
-    await page.getByRole("navigation", { name: "Seções de metas" }).getByRole("link", { name: "OKRs e resultados-chave" }).click();
+    await page.getByRole("navigation", { name: "Seções de metas" }).getByRole("link", { name: "Metas do trimestre (OKRs)" }).click();
     await expect(page).toHaveURL(/aba=okrs/);
-    await page.getByRole("button", { name: "Novo OKR" }).click();
-    await page.getByLabel("Objetivo do OKR").selectOption({ label: "Crescer a carteira (Comercial)" });
-    await page.getByLabel("OKR", { exact: true }).fill("Ganhar tração comercial");
-    await page.getByRole("button", { name: "Criar OKR" }).click();
+    await page.getByRole("button", { name: "Nova meta do trimestre" }).click();
+    await page.getByLabel("Objetivo da meta").selectOption({ label: "Crescer a carteira (Comercial)" });
+    await page.getByLabel("Meta do trimestre", { exact: true }).fill("Ganhar tração comercial");
+    await page.getByRole("button", { name: "Criar meta" }).click();
     const okr = page.getByRole("article", { name: "Ganhar tração comercial" });
     await expect(okr).toBeVisible();
     await okr.getByRole("button", { name: "Novo resultado-chave" }).click();
@@ -38,8 +38,8 @@ test.describe("resultados", () => {
     await expect(okr.getByText("Atingido")).toBeVisible();
     await page.reload();
     await expect(page.getByRole("article", { name: "Ganhar tração comercial" }).getByText("Atingido")).toBeVisible();
-    await expect(page.getByText("Resultado dos KRs: 100%")).toBeVisible();
-    await expect(page.getByText("Execução das ações: —")).toBeVisible();
+    await expect(page.getByText("Resultados-chave alcançados: 100%")).toBeVisible();
+    await expect(page.getByText("Ações concluídas: —")).toBeVisible();
     await page.goto("/visao-geral");
     await expect(page.getByTestId("media-krs")).toHaveText("100%");
   });

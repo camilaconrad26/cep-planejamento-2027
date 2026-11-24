@@ -45,7 +45,7 @@ export async function criarObjetivo(d: { categoryId: string; titulo: string; tri
   const { error } = await c.sb.from("cep_objectives").insert({ org_id: c.s.orgId, cycle_id: ciclo, category_id: d.categoryId, titulo, trimestre: d.trimestre });
   if (error) return { erro: FALHA };
   revalidar();
-  return { ok: "Objetivo criado." };
+  return { ok: "Objetivo criado. Agora quebre em ações: o que você vai fazer para chegar lá?" };
 }
 
 export async function editarObjetivo(id: string, d: { titulo: string; trimestre: number | null }): Promise<Retorno> {

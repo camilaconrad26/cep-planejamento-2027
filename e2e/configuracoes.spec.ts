@@ -12,7 +12,7 @@ test("perfil-e-nome", async ({ page }) => {
   await expect(page.getByRole("status").filter({ hasText: "Perfil salvo." })).toBeVisible();
   await page.goto("/visao-geral");
   await expect(page.getByText("Perfil 2 · Consolidação")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Olá, Ana");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^(Bom dia|Boa tarde|Boa noite), Ana$/);
 });
 
 test("trocar-senha", async ({ page }) => {

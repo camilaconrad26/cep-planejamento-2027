@@ -6,7 +6,7 @@ const t = (o: J, k: string) => (o && typeof o[k] === "string" ? (o[k] as string)
 const NOMES: Record<string, [string, string, (o: J) => string]> = {
   cep_objectives: ["Objetivo", "o", (o) => t(o, "titulo")],
   cep_tasks: ["Ação", "a", (o) => t(o, "titulo")],
-  cep_okrs: ["OKR", "o", (o) => t(o, "titulo")],
+  cep_okrs: ["Meta do trimestre", "a", (o) => t(o, "titulo")],
   cep_key_results: ["Resultado-chave", "o", (o) => t(o, "descricao")],
   cep_kpis: ["Indicador", "o", (o) => t(o, "nome")],
   cep_sales_actions: ["Ação de vendas", "a", (o) => t(o, "produto")],

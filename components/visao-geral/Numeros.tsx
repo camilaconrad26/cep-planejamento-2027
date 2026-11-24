@@ -12,8 +12,8 @@ export function Numeros({ c }: { c: C }) {
       {item("Ações no plano", String(c.total), "total-acoes")}
       {item("Em andamento", c.total ? String(c.emAndamento) : "—")}
       {item("Atrasadas", c.total ? String(c.atrasadas) : "—", undefined, c.atrasadas > 0)}
-      {item("Vencem em 7 dias", c.total ? String(c.vencendo7dias) : "—")}
-      {item("Execução", c.total ? `${c.execucaoPct}%` : "—", "execucao")}
+      {item("Vencem nesta semana", c.total ? String(c.vencendo7dias) : "—")}
+      {item("Concluído", c.total ? `${c.execucaoPct}%` : "—", "execucao")}
     </dl>
   );
 }

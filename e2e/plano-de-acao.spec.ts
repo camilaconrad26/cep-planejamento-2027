@@ -169,7 +169,7 @@ test.describe("plano de ação", () => {
     await page.goto("/plano-de-acao?visao=kanban");
     await page.getByLabel('Mover "Gravar vídeo" para').selectOption("concluido");
     await page.getByRole("button", { name: 'Mover "Gravar vídeo"' }).click();
-    await expect(page.getByRole("status").filter({ hasText: "Ação concluída." })).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: "Primeira ação concluída. Bom começo!" })).toBeVisible();
     await page.goto("/plano-de-acao?concluidas=1");
     await linhas(page).filter({ hasText: "Gravar vídeo" }).getByRole("button", { name: "Editar: Gravar vídeo" }).click();
     await page.getByRole("form", { name: "Editar ação: Gravar vídeo" }).getByLabel("Responsável").fill("Ana");

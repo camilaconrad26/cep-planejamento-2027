@@ -26,7 +26,7 @@ test("validacao-no-cadastro", async ({ page }) => {
 
 test("cadastro-e-login", async ({ page }) => {
   const { email, senha } = await criarConta(page, "Mariana Teste");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Olá, Mariana");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Mariana");
   await page.getByRole("button", { name: "Sair" }).click();
   await expect(page).toHaveURL(/\/entrar/);
   await page.goto("/visao-geral");
